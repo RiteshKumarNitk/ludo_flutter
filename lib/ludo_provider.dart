@@ -38,6 +38,12 @@ class LudoProvider extends ChangeNotifier {
   ///Shared RNG for dice rolls and auto-picks
   static final Random _random = Random();
 
+  ///Test hook: when set, its value (clamped to 1..6) replaces the RNG draw
+  ///in [throwDice] so scenarios like triple sixes or exact captures can be
+  ///reproduced deterministically. Always null in the shipped game.
+  @visibleForTesting
+  int Function()? debugDiceRoll;
+
   ///Flags to check if pawn is moving
   bool _isMoving = false;
 
@@ -52,6 +58,10 @@ class LudoProvider extends ChangeNotifier {
 
   ///Incremented on every startGame so stats record each finished match once
   int _matchId = 0;
+
+  ///Process-wide id source: seeded from the clock so ids never repeat
+  ///across app launches, where [StatsProvider.lastRecordedMatchId] lives on
+  static int _matchSequence = DateTime.now().millisecondsSinceEpoch;
 
   ///Timer used to drive CPU turns
   Timer? _cpuTimer;
@@ -189,7 +199,11 @@ class LudoProvider extends ChangeNotifier {
     if (generation != _generation) return;
 
     _diceStarted = false;
-    _diceResult = _random.nextInt(6) + 1; //Uniform random between 1 - 6
+    final forced = debugDiceRoll?.call();
+    //Uniform random between 1 - 6, or the clamped test override
+    _diceResult = forced == null
+        ? _random.nextInt(6) + 1
+        : (forced < 1 ? 1 : (forced > 6 ? 6 : forced));
     if (_diceResult == 6) {
       _consecutiveSixes++;
       sixesRolled[currentPlayer.type] = (sixesRolled[currentPlayer.type] ?? 0) + 1;
@@ -442,6 +456,7 @@ class LudoProvider extends ChangeNotifier {
         'capturesMade': {for (final e in capturesMade.entries) e.key.name: e.value},
         'capturesTaken': {for (final e in capturesTaken.entries) e.key.name: e.value},
         'sixesRolled': {for (final e in sixesRolled.entries) e.key.name: e.value},
+        'matchId': _matchId,
         'savedAt': DateTime.now().millisecondsSinceEpoch,
       };
 
@@ -514,6 +529,11 @@ class LudoProvider extends ChangeNotifier {
       _diceResult = (json['dice'] as num?)?.toInt() ?? 0;
       _consecutiveSixes = (json['sixes'] as num?)?.toInt() ?? 0;
 
+      ///Keep the suspended match's id so resuming never re-records or
+      ///skips the match in the lifetime statistics
+      final savedMatchId = (json['matchId'] as num?)?.toInt();
+      if (savedMatchId != null) _matchId = savedMatchId;
+
       _restoreCounters(capturesMade, json['capturesMade']);
       _restoreCounters(capturesTaken, json['capturesTaken']);
       _restoreCounters(sixesRolled, json['sixesRolled']);
@@ -569,7 +589,7 @@ class LudoProvider extends ChangeNotifier {
     _persistTimer?.cancel();
     _persistTimer = null;
     _generation++;
-    _matchId++;
+    _matchId = ++_matchSequence;
 
     _config = config ?? GameConfig.defaults();
     _isMoving = false;
