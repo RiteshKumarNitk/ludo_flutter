@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ludo_flutter/board_theme.dart';
 import 'package:ludo_flutter/constants.dart';
+import 'package:ludo_flutter/l10n/app_strings.dart';
 import 'package:ludo_flutter/settings_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -10,8 +12,9 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final s = AppStrings.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings'), backgroundColor: Colors.transparent),
+      appBar: AppBar(title: Text(s.settings), backgroundColor: Colors.transparent),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -19,46 +22,63 @@ class SettingsScreen extends StatelessWidget {
             SwitchListTile(
               value: settings.sound,
               onChanged: settings.setSound,
-              title: const Text('Sound effects'),
-              subtitle: const Text('Dice, pawn movement and capture sounds'),
+              title: Text(s.soundEffects),
+              subtitle: Text(s.soundEffectsHint),
             ),
             SwitchListTile(
               value: settings.haptics,
               onChanged: settings.setHaptics,
-              title: const Text('Haptic feedback'),
-              subtitle: const Text('Vibrate when rolling and capturing'),
+              title: Text(s.hapticFeedback),
+              subtitle: Text(s.hapticFeedbackHint),
             ),
             const Divider(),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Animation speed',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                s.animationSpeed,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             RadioGroup<double>(
               groupValue: settings.animationSpeed,
               onChanged: (value) => settings.setAnimationSpeed(value ?? 1.0),
-              child: const Column(
+              child: Column(
                 children: [
-                  RadioListTile<double>(value: 0.6, title: Text('Slow')),
-                  RadioListTile<double>(value: 1.0, title: Text('Normal')),
-                  RadioListTile<double>(value: 1.6, title: Text('Fast')),
+                  RadioListTile<double>(value: 0.6, title: Text(s.speedSlow)),
+                  RadioListTile<double>(value: 1.0, title: Text(s.speedNormal)),
+                  RadioListTile<double>(value: 1.6, title: Text(s.speedFast)),
                 ],
               ),
             ),
             const Divider(),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                s.boardTheme,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SegmentedButton<BoardThemeType>(
+              segments: [
+                for (final type in BoardThemeType.values)
+                  ButtonSegment<BoardThemeType>(value: type, label: Text(type.label)),
+              ],
+              selected: <BoardThemeType>{settings.boardTheme},
+              onSelectionChanged: (selection) => settings.setBoardTheme(selection.first),
+            ),
+            const SizedBox(height: 8),
+            const Divider(),
             SwitchListTile(
               value: settings.extraRollOnSix,
               onChanged: settings.setExtraRollOnSix,
-              title: const Text('Extra roll on 6'),
-              subtitle: const Text('Default rule for new matches'),
+              title: Text(s.extraRollOnSix),
+              subtitle: Text(s.defaultRuleHint),
             ),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () => settings.reset(),
               icon: const Icon(Icons.restart_alt_rounded),
-              label: const Text('Reset to defaults'),
+              label: Text(s.resetToDefaults),
               style: OutlinedButton.styleFrom(
                 foregroundColor: LudoColor.red,
                 padding: const EdgeInsets.symmetric(vertical: 14),

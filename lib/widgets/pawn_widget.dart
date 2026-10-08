@@ -51,8 +51,7 @@ class PawnWidget extends StatelessWidget {
                     provider.gameState != LudoGameState.pickPawn) {
                   return;
                 }
-                final int target = step == -1 ? 1 : (step + 1) + provider.diceResult;
-                provider.move(type, index, target);
+                provider.pickAndMove(index);
               },
               child: Container(
                 decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 2)),

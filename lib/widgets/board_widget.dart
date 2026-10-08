@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:ludo_flutter/board_theme.dart';
 import 'package:ludo_flutter/constants.dart';
+import 'package:ludo_flutter/l10n/app_strings.dart';
 import 'package:ludo_flutter/ludo_provider.dart';
+import 'package:ludo_flutter/settings_provider.dart';
+import 'package:ludo_flutter/widgets/board_painter.dart';
 import 'package:ludo_flutter/widgets/pawn_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../ludo_player.dart';
+
+///A stack of pawns occupying one board cell
+class _CellOccupants {
+  final double x;
+  final double y;
+  final List<Pawn> pawns = [];
+  _CellOccupants(this.x, this.y);
+}
 
 ///Widget for the board
 class BoardWidget extends StatelessWidget {
@@ -12,16 +24,9 @@ class BoardWidget extends StatelessWidget {
 
   ///Return board size
   double ludoBoard(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    if (width > 500) {
-      return 500;
-    } else {
-      if (width < 300) {
-        return 300;
-      } else {
-        return width - 20;
-      }
-    }
+    final size = MediaQuery.of(context).size;
+    final available = size.width < size.height ? size.width : size.height;
+    return available.clamp(280.0, 640.0);
   }
 
   ///Count box size
@@ -31,18 +36,18 @@ class BoardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double boardSize = ludoBoard(context);
+
+    ///Board skin chosen on the settings screen
+    final BoardTheme theme = BoardTheme.of(context.watch<SettingsProvider>().boardTheme);
     return Container(
       margin: const EdgeInsets.all(10),
       clipBehavior: Clip.antiAlias,
-      width: ludoBoard(context),
-      height: ludoBoard(context),
+      width: boardSize,
+      height: boardSize,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(40),
-        image: const DecorationImage(
-          image: AssetImage("assets/images/board.png"),
-          fit: BoxFit.cover,
-          alignment: Alignment.topCenter,
-        ),
+        color: theme.background,
       ),
       child: Consumer<LudoProvider>(
         builder: (context, value, child) {
@@ -50,94 +55,71 @@ class BoardWidget extends StatelessWidget {
           //so we make some logic to change the order of players to make sure
           //the player on top is the one who is playing
           List<LudoPlayer> players = List.from(value.players);
-          Map<String, List<PawnWidget>> pawnsRaw = {};
-          Map<String, List<String>> pawnsToPrint = {};
-          List<Widget> playersPawn = [];
 
-          //Sort players by current turn to make sure the player on top is the one who is playing
-          players.sort((a, b) => value.currentPlayer.type == a.type ? 1 : -1);
+          //Sort with the current player last so their pawns render on top.
+          //A consistent comparator: 0 for everyone else, 1 for the current player.
+          players.sort((a, b) {
+            final int aTop = a.type == value.currentPlayer.type ? 1 : 0;
+            final int bTop = b.type == value.currentPlayer.type ? 1 : 0;
+            return aTop.compareTo(bTop);
+          });
 
-          ///Loop through all players and add their pawns to the map
-          for (int i = 0; i < players.length; i++) {
-            var player = players[i];
-            for (int j = 0; j < player.pawns.length; j++) {
-              var pawn = player.pawns[j];
+          ///Group every pawn that is on the board by its cell
+          final Map<String, _CellOccupants> cells = {};
+          final List<Widget> playersPawn = [];
+
+          for (final player in players) {
+            for (final pawn in player.pawns) {
+              final bool highlight = player.highlighted.contains(pawn.index);
               if (pawn.step > -1) {
-                String step = player.path[pawn.step].toString();
-                if (pawnsRaw[step] == null) {
-                  pawnsRaw[step] = [];
-                  pawnsToPrint[step] = [];
-                }
-                pawnsRaw[step]!.add(pawn);
-                pawnsToPrint[step]!.add(player.type.toString());
+                final List<double> coordinates = player.path[pawn.step];
+                final String key = '${coordinates[0]}_${coordinates[1]}';
+                final cell = cells.putIfAbsent(
+                    key, () => _CellOccupants(coordinates[0], coordinates[1]));
+                cell.pawns.add(pawn);
               } else {
-                if (pawnsRaw["home"] == null) {
-                  pawnsRaw["home"] = [];
-                  pawnsToPrint["home"] = [];
-                }
-                pawnsRaw["home"]!.add(pawn);
-                pawnsToPrint["home"]!.add(player.type.toString());
+                ///Pawn sits in its base slot
+                playersPawn.add(
+                  AnimatedPositioned(
+                    key: ValueKey("${pawn.type.name}_${pawn.index}"),
+                    left: LudoPath.stepBox(boardSize, player.homePath[pawn.index][0]),
+                    top: LudoPath.stepBox(boardSize, player.homePath[pawn.index][1]),
+                    width: boxStepSize(context),
+                    height: boxStepSize(context),
+                    duration: const Duration(milliseconds: 200),
+                    child: PawnWidget(pawn.index, pawn.type,
+                        step: pawn.step, highlight: highlight),
+                  ),
+                );
               }
             }
           }
 
-          for (int i = 0; i < pawnsRaw.keys.length; i++) {
-            String key = pawnsRaw.keys.elementAt(i);
-            List<PawnWidget> pawnsValue = pawnsRaw[key]!;
-
-            /// This is for every pawn in home
-            if (key == "home") {
-              playersPawn.addAll(
-                pawnsValue.map((e) {
-                  var player = value.players.firstWhere((element) => element.type == e.type);
-                  return AnimatedPositioned(
-                    key: ValueKey("${e.type.name}_${e.index}"),
-                    left: LudoPath.stepBox(ludoBoard(context), player.homePath[e.index][0]),
-                    top: LudoPath.stepBox(ludoBoard(context), player.homePath[e.index][1]),
-                    width: boxStepSize(context),
-                    height: boxStepSize(context),
-                    duration: const Duration(milliseconds: 200),
-                    child: e,
-                  );
-                }),
-              );
+          ///Render every occupied board cell
+          for (final cell in cells.values) {
+            if (cell.pawns.length == 1) {
+              // This is for 1 pawn in 1 box
+              final pawn = cell.pawns.first;
+              playersPawn.add(AnimatedPositioned(
+                key: ValueKey("${pawn.type.name}_${pawn.index}"),
+                duration: const Duration(milliseconds: 200),
+                left: LudoPath.stepBox(boardSize, cell.x),
+                top: LudoPath.stepBox(boardSize, cell.y),
+                width: boxStepSize(context),
+                height: boxStepSize(context),
+                child: PawnWidget(pawn.index, pawn.type,
+                    step: pawn.step, highlight: _isHighlighted(value, pawn)),
+              ));
             } else {
-              // This is for every pawn in path (not in home)
-              // I'm so lazy, so make it simple h3h3
-              List<double> coordinates = key.replaceAll("[", "").replaceAll("]", "").split(",").map((e) => double.parse(e.trim())).toList();
-
-              if (pawnsValue.length == 1) {
-                // This is for 1 pawn in 1 box
-                var e = pawnsValue.first;
-                playersPawn.add(AnimatedPositioned(
-                  key: ValueKey("${e.type.name}_${e.index}"),
-                  duration: const Duration(milliseconds: 200),
-                  left: LudoPath.stepBox(ludoBoard(context), coordinates[0]),
-                  top: LudoPath.stepBox(ludoBoard(context), coordinates[1]),
-                  width: boxStepSize(context),
-                  height: boxStepSize(context),
-                  child: pawnsValue.first,
-                ));
-              } else {
-                // This is for more than 1 pawn in 1 box
-                playersPawn.addAll(
-                  List.generate(
-                    pawnsValue.length,
-                    (index) {
-                      var e = pawnsValue[index];
-                      return AnimatedPositioned(
-                        key: ValueKey("${e.type.name}_${e.index}"),
-                        duration: const Duration(milliseconds: 200),
-                        left: LudoPath.stepBox(ludoBoard(context), coordinates[0]) + (index * 3),
-                        top: LudoPath.stepBox(ludoBoard(context), coordinates[1]),
-                        width: boxStepSize(context) - 5,
-                        height: boxStepSize(context),
-                        child: pawnsValue[index],
-                      );
-                    },
-                  ),
-                );
-              }
+              // Several pawns share one cell: scale them down into a 2x2 grid
+              // and show a count badge (instead of the old 3px faked offset)
+              playersPawn.add(_StackedPawns(
+                key: ValueKey('stack_${cell.x}_${cell.y}'),
+                cell: cell,
+                boardSize: boardSize,
+                boxSize: boxStepSize(context),
+                value: value,
+              ));
             }
           }
 
@@ -146,6 +128,13 @@ class BoardWidget extends StatelessWidget {
               fit: StackFit.expand,
               alignment: Alignment.center,
               children: [
+                ///The painted board surface sits under every pawn
+                CustomPaint(
+                  painter: BoardPainter(
+                    theme: theme,
+                    activePlayers: value.players.map((p) => p.type).toSet(),
+                  ),
+                ),
                 ...playersPawn,
                 ...winners(context, value.winners),
                 turnIndicator(context, value.currentPlayer.type, value.currentPlayer.color,
@@ -158,9 +147,15 @@ class BoardWidget extends StatelessWidget {
     );
   }
 
+  static bool _isHighlighted(LudoProvider value, Pawn pawn) {
+    final player = value.players.firstWhere((p) => p.type == pawn.type);
+    return player.highlighted.contains(pawn.index);
+  }
+
   ///This is for the turn indicator widget
   Widget turnIndicator(
       BuildContext context, LudoPlayerType turn, Color color, LudoGameState stage, String name) {
+    final s = AppStrings.of(context);
     //0 is left, 1 is right
     int x = 0;
     //0 is top, 1 is bottom
@@ -184,28 +179,32 @@ class BoardWidget extends StatelessWidget {
         y = 1;
         break;
     }
-    String stageText = "Roll the dice";
+    String stageText = s.turnRollDice;
     switch (stage) {
       case LudoGameState.throwDice:
-        stageText = "Roll the dice";
+        stageText = s.turnRollDice;
         break;
       case LudoGameState.moving:
-        stageText = "Pawn is moving...";
+        stageText = s.hintPawnMoving;
         break;
       case LudoGameState.pickPawn:
-        stageText = "Pick a pawn";
+        stageText = s.turnPickPawn;
         break;
       case LudoGameState.finish:
-        stageText = "Game is over";
+        stageText = s.hintGameOver;
         break;
     }
+    final double boardSize = ludoBoard(context);
+    ///Scale the hint text with the board so it stays readable on big screens
+    final double baseSize = (boardSize * 0.026).clamp(9.0, 15.0);
+    final double titleSize = (boardSize * 0.034).clamp(12.0, 20.0);
     return Positioned(
       top: y == 0 ? 0 : null,
       left: x == 0 ? 0 : null,
       right: x == 1 ? 0 : null,
       bottom: y == 1 ? 0 : null,
-      width: ludoBoard(context) * .4,
-      height: ludoBoard(context) * .4,
+      width: boardSize * .4,
+      height: boardSize * .4,
       child: IgnorePointer(
         child: Padding(
           padding: EdgeInsets.all(boxStepSize(context)),
@@ -215,10 +214,10 @@ class BoardWidget extends StatelessWidget {
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(15)),
               child: RichText(
                 textAlign: TextAlign.center,
-                text: TextSpan(style: TextStyle(fontSize: 8, color: color), children: [
+                text: TextSpan(style: TextStyle(fontSize: baseSize, color: color), children: [
                   TextSpan(
-                      text: "$name's turn!\n",
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      text: "${s.turnAnnouncement(name)}\n",
+                      style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold)),
                   TextSpan(text: stageText, style: const TextStyle(color: Colors.black)),
                 ]),
               )),
@@ -231,13 +230,7 @@ class BoardWidget extends StatelessWidget {
   List<Widget> winners(BuildContext context, List<LudoPlayerType> winners) => List.generate(
         winners.length,
         (index) {
-          Widget crownImage = Image.asset("assets/games/ludo/crown/1st.png");
-
-          //0 is left, 1 is right
-          int x = 0;
-          //0 is top, 1 is bottom
-          int y = 0;
-
+          Widget crownImage;
           if (index == 0) {
             crownImage = Image.asset("assets/images/crown/1st.png", fit: BoxFit.cover);
           } else if (index == 1) {
@@ -247,6 +240,11 @@ class BoardWidget extends StatelessWidget {
           } else {
             return Container();
           }
+
+          //0 is left, 1 is right
+          int x = 0;
+          //0 is top, 1 is bottom
+          int y = 0;
 
           switch (winners[index]) {
             case LudoPlayerType.green:
@@ -284,4 +282,75 @@ class BoardWidget extends StatelessWidget {
           );
         },
       );
+}
+
+///Renders pawns that share one cell: up to four pawns arranged in a 2x2 grid,
+///scaled to fit, plus a count badge when more than one pawn is present.
+class _StackedPawns extends StatelessWidget {
+  final _CellOccupants cell;
+  final double boardSize;
+  final double boxSize;
+  final LudoProvider value;
+
+  const _StackedPawns({
+    super.key,
+    required this.cell,
+    required this.boardSize,
+    required this.boxSize,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final double left = LudoPath.stepBox(boardSize, cell.x);
+    final double top = LudoPath.stepBox(boardSize, cell.y);
+    const double gap = 1.0;
+    final double half = (boxSize - gap) / 2;
+
+    return Positioned(
+      left: left,
+      top: top,
+      width: boxSize,
+      height: boxSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          for (int i = 0; i < cell.pawns.length && i < 4; i++)
+            Positioned(
+              left: (i % 2) * (half + gap),
+              top: (i ~/ 2) * (half + gap),
+              width: half,
+              height: half,
+              child: PawnWidget(
+                cell.pawns[i].index,
+                cell.pawns[i].type,
+                step: cell.pawns[i].step,
+                highlight: BoardWidget._isHighlighted(value, cell.pawns[i]),
+              ),
+            ),
+          if (cell.pawns.length > 1)
+            Positioned(
+              right: -boxSize * 0.14,
+              top: -boxSize * 0.14,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: boxSize * 0.07, vertical: boxSize * 0.02),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(boxSize),
+                  border: Border.all(color: Colors.white, width: 1),
+                ),
+                child: Text(
+                  'x${cell.pawns.length}',
+                  style: TextStyle(
+                    fontSize: (boxSize * 0.22).clamp(7.0, 12.0),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

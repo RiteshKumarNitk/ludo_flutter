@@ -22,7 +22,22 @@ class DiceWidget extends StatelessWidget {
               ? null
               : value.throwDice,
           padding: const EdgeInsets.only(),
-          child: value.diceStarted ? Image.asset("assets/images/dice/draw.gif", fit: BoxFit.contain) : Image.asset("assets/images/dice/${value.diceResult}.png", fit: BoxFit.contain),
+          child: value.diceStarted
+              ? Image.asset(
+                  "assets/images/dice/draw.gif",
+                  fit: BoxFit.contain,
+                  key: const ValueKey('rolling'),
+                )
+              : AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, animation) =>
+                      ScaleTransition(scale: animation, child: child),
+                  child: Image.asset(
+                    "assets/images/dice/${value.diceResult}.png",
+                    fit: BoxFit.contain,
+                    key: ValueKey(value.diceResult),
+                  ),
+                ),
         ),
       ),
     );
