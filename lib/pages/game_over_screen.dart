@@ -1,28 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:ludo_flutter/constants.dart';
+import 'package:ludo_flutter/l10n/app_strings.dart';
 import 'package:ludo_flutter/ludo_provider.dart';
+import 'package:ludo_flutter/stats_provider.dart';
 import 'package:provider/provider.dart';
 
 ///Final ranking shown when the match is decided
-class GameOverScreen extends StatelessWidget {
+class GameOverScreen extends StatefulWidget {
   const GameOverScreen({super.key});
+
+  @override
+  State<GameOverScreen> createState() => _GameOverScreenState();
+}
+
+class _GameOverScreenState extends State<GameOverScreen> {
+  ///Guards the one-shot stats recording against rebuilds
+  bool _recorded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ///Deferred one frame so no notification fires while the tree is
+    ///building; [StatsProvider.recordMatch] itself is idempotent by match id
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_recorded || !mounted) {
+        return;
+      }
+      _recorded = true;
+      context.read<StatsProvider>().recordMatch(context.read<LudoProvider>());
+    });
+  }
 
   String _crownAsset(int rank) {
     final suffix = rank == 1 ? 'st' : rank == 2 ? 'nd' : 'rd';
     return 'assets/images/crown/$rank$suffix.png';
-  }
-
-  String _rankLabel(int rank) {
-    switch (rank) {
-      case 1:
-        return '1st';
-      case 2:
-        return '2nd';
-      case 3:
-        return '3rd';
-      default:
-        return '${rank}th';
-    }
   }
 
   Color _playerColor(LudoPlayerType type) {
@@ -40,7 +51,9 @@ class GameOverScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final provider = context.watch<LudoProvider>();
+    final stats = context.watch<StatsProvider>();
     final ranking = [
       ...provider.winners,
       ...provider.players
@@ -56,9 +69,9 @@ class GameOverScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Game Over',
-                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: 2),
+                Text(
+                  s.gameOver,
+                  style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: 2),
                 ),
                 const SizedBox(height: 12),
                 Image.asset('assets/images/thankyou.gif', height: 140),
@@ -104,7 +117,7 @@ class GameOverScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            _rankLabel(i + 1),
+                            s.rankLabel(i + 1),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -113,12 +126,17 @@ class GameOverScreen extends StatelessWidget {
                           ),
                           if (provider.player(ranking[i]).isCpu) ...[
                             const SizedBox(width: 8),
-                            const Text('CPU', style: TextStyle(fontSize: 11, color: Colors.white54)),
+                            Text(s.cpu, style: const TextStyle(fontSize: 11, color: Colors.white54)),
                           ],
                         ],
                       ),
                     ),
                   ),
+                const SizedBox(height: 16),
+                Text(
+                  s.allTimeWins(stats.matchesWon, stats.bestWinStreak),
+                  style: const TextStyle(fontSize: 13, color: Colors.white54),
+                ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: () {
@@ -126,7 +144,7 @@ class GameOverScreen extends StatelessWidget {
                     Navigator.of(context).pushReplacementNamed('/game');
                   },
                   icon: const Icon(Icons.replay_rounded),
-                  label: const Text('Play Again'),
+                  label: Text(s.playAgain),
                   style: FilledButton.styleFrom(
                     backgroundColor: LudoColor.green,
                     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
@@ -138,17 +156,17 @@ class GameOverScreen extends StatelessWidget {
                   onPressed: () =>
                       Navigator.of(context).popUntil((route) => route.settings.name == '/home'),
                   icon: const Icon(Icons.home_rounded),
-                  label: const Text('Back to Menu'),
+                  label: Text(s.backToMenu),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'This game made with Flutter ❤️ by Mochamad Nizwar Syafuan',
+                Text(
+                  s.aboutCredit,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: Colors.white54),
+                  style: const TextStyle(fontSize: 12, color: Colors.white54),
                 ),
               ],
             ),

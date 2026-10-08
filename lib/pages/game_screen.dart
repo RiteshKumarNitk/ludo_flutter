@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ludo_flutter/audio.dart';
 import 'package:ludo_flutter/constants.dart';
+import 'package:ludo_flutter/l10n/app_strings.dart';
 import 'package:ludo_flutter/ludo_provider.dart';
 import 'package:ludo_flutter/widgets/board_widget.dart';
 import 'package:ludo_flutter/widgets/dice_widget.dart';
@@ -14,14 +16,32 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   bool _navigatedToGameOver = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final provider = context.read<LudoProvider>();
     if (provider.players.isEmpty) provider.startGame();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    ///Persist the match whenever the app leaves the foreground so an
+    ///OS kill mid-game never loses progress
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      context.read<LudoProvider>().flushSave();
+    }
   }
 
   Future<void> _openPauseMenu() async {
@@ -29,6 +49,7 @@ class _GameScreenState extends State<GameScreen> {
     provider.setPaused(true);
     final action = await showPauseMenu(context);
     if (!mounted) return;
+    if (action != null) Audio.hapticLight();
 
     switch (action) {
       case PauseAction.restart:
@@ -42,6 +63,7 @@ class _GameScreenState extends State<GameScreen> {
         provider.setPaused(false);
         break;
       case PauseAction.quit:
+        provider.quitMatch();
         Navigator.of(context).popUntil((route) => route.settings.name == '/home');
         break;
       case PauseAction.resume:
@@ -60,20 +82,22 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  String _hint(LudoProvider value) {
-    if (value.isFinished) return 'Game over';
-    if (value.isPaused) return 'Paused';
+  String _hint(LudoProvider value, AppStrings s) {
+    if (value.isFinished) return s.hintGameOver;
+    if (value.isPaused) return s.hintPaused;
     switch (value.gameState) {
       case LudoGameState.throwDice:
-        return value.isCpuTurn ? '${value.currentPlayer.name} is rolling...' : 'Tap the dice to roll';
+        return value.isCpuTurn
+            ? s.hintRolling(value.currentPlayer.name)
+            : s.hintTapDice;
       case LudoGameState.pickPawn:
         return value.isCpuTurn
-            ? '${value.currentPlayer.name} is thinking...'
-            : 'Tap a highlighted pawn to move';
+            ? s.hintThinking(value.currentPlayer.name)
+            : s.hintTapPawn;
       case LudoGameState.moving:
-        return 'Pawn is moving...';
+        return s.hintPawnMoving;
       case LudoGameState.finish:
-        return 'Game over';
+        return s.hintGameOver;
     }
   }
 
@@ -83,6 +107,9 @@ class _GameScreenState extends State<GameScreen> {
       body: SafeArea(
         child: Consumer<LudoProvider>(
           builder: (context, value, child) {
+            ///Match was torn down (quit) while this screen is popping
+            if (value.players.isEmpty) return const SizedBox.shrink();
+            final s = AppStrings.of(context);
             _onFinished(value);
             return Column(
               children: [
@@ -98,9 +125,13 @@ class _GameScreenState extends State<GameScreen> {
                           const SizedBox(height: 8),
                           const SizedBox(width: 56, height: 56, child: DiceWidget()),
                           const SizedBox(height: 4),
-                          Text(
-                            _hint(value),
-                            style: const TextStyle(fontSize: 13, color: Colors.white70),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: Text(
+                              _hint(value, s),
+                              key: ValueKey<String>(_hint(value, s)),
+                              style: const TextStyle(fontSize: 13, color: Colors.white70),
+                            ),
                           ),
                         ],
                       ),
@@ -121,6 +152,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildHud(BuildContext context, LudoProvider value) {
+    final s = AppStrings.of(context);
     final currentPlayer = value.currentPlayer;
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
@@ -131,11 +163,13 @@ class _GameScreenState extends State<GameScreen> {
               IconButton(
                 onPressed: _openPauseMenu,
                 icon: const Icon(Icons.pause_circle_filled_rounded, size: 36),
-                tooltip: 'Pause',
+                tooltip: s.pause,
               ),
               Expanded(
                 child: Center(
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
                       color: currentPlayer.color.withValues(alpha: 0.2),
@@ -156,7 +190,7 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${currentPlayer.name} ${currentPlayer.isCpu ? '(CPU)' : '(You)'}',
+                          '${currentPlayer.name} ${currentPlayer.isCpu ? s.cpuSeat : s.youSeat}',
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -166,6 +200,16 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ),
               const SizedBox(width: 48),
+              IconButton(
+                onPressed: value.canUndo
+                    ? () {
+                        Audio.hapticLight();
+                        value.undoLastMove();
+                      }
+                    : null,
+                icon: const Icon(Icons.undo_rounded, size: 28),
+                tooltip: s.undoLastMove,
+              ),
             ],
           ),
           const SizedBox(height: 4),

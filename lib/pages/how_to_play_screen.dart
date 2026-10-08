@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:ludo_flutter/constants.dart';
+import 'package:ludo_flutter/l10n/app_strings.dart';
 
-///Rules of the game
+///Rules of the game.
+///
+///The bar title goes through [AppStrings]; the article body below is
+///long-form English content and migrates together with a future locale.
 class HowToPlayScreen extends StatelessWidget {
   const HowToPlayScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('How to Play'), backgroundColor: Colors.transparent),
+      appBar: AppBar(
+          title: Text(AppStrings.of(context).howToPlay),
+          backgroundColor: Colors.transparent),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),

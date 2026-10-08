@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:ludo_flutter/constants.dart';
+import 'package:ludo_flutter/l10n/app_strings.dart';
 
 enum PauseAction { resume, restart, settings, quit }
 
 ///Modal pause menu shown while a match is running
 Future<PauseAction?> showPauseMenu(BuildContext context) {
+  final s = AppStrings.of(context);
   return showDialog<PauseAction>(
     context: context,
     barrierDismissible: true,
-    builder: (context) => const AlertDialog(
-      title: Text('Paused', textAlign: TextAlign.center),
+    builder: (context) => AlertDialog(
+      title: Text(s.paused, textAlign: TextAlign.center),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _PauseButton(
-            label: 'Resume',
+            label: s.resume,
             icon: Icons.play_arrow_rounded,
             color: LudoColor.green,
             action: PauseAction.resume,
           ),
           _PauseButton(
-            label: 'Restart',
+            label: s.restart,
             icon: Icons.refresh_rounded,
             color: LudoColor.yellow,
             action: PauseAction.restart,
           ),
           _PauseButton(
-            label: 'Settings',
+            label: s.settings,
             icon: Icons.settings_outlined,
             color: LudoColor.blue,
             action: PauseAction.settings,
           ),
           _PauseButton(
-            label: 'Quit to Menu',
+            label: s.quitToMenu,
             icon: Icons.logout_rounded,
             color: LudoColor.red,
             action: PauseAction.quit,
