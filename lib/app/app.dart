@@ -14,6 +14,13 @@ import 'screens/splash_screen.dart';
 const String appVersion = '1.0.0';
 
 class BoardGamesApp extends StatelessWidget {
+  static final Map<String, WidgetBuilder> _routes = {
+    AppRoutes.splash: (_) => const SplashScreen(),
+    AppRoutes.home: (_) => const HomeScreen(),
+    AppRoutes.settings: (_) => const SettingsScreen(),
+    for (final game in GameCatalog.games) ...game.routes,
+  };
+
   ///Skips the splash screen (used by tests)
   final String initialRoute;
 
@@ -34,12 +41,14 @@ class BoardGamesApp extends StatelessWidget {
         supportedLocales: const [Locale('en')],
         navigatorObservers: [appRouteObserver],
         initialRoute: initialRoute,
-        routes: {
-          AppRoutes.splash: (_) => const SplashScreen(),
-          AppRoutes.home: (_) => const HomeScreen(),
-          AppRoutes.settings: (_) => const SettingsScreen(),
-          for (final game in GameCatalog.games) ...game.routes,
-        },
+        routes: _routes,
+        //Open exactly the requested route (no implicit parent routes)
+        onGenerateInitialRoutes: (name) => [
+          MaterialPageRoute<void>(
+            settings: RouteSettings(name: name),
+            builder: _routes[name] ?? _routes[AppRoutes.splash]!,
+          ),
+        ],
       ),
     );
   }

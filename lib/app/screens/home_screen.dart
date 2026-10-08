@@ -165,7 +165,7 @@ class _Logo extends StatelessWidget {
       width: 48,
       height: 48,
       padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: AppRadius.mdAll,
         boxShadow: AppShadows.soft,

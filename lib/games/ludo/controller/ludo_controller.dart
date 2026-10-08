@@ -170,6 +170,16 @@ class LudoController extends ChangeNotifier {
     _advance();
   }
 
+  ///Shows an exact match state (tests and screenshots only)
+  @visibleForTesting
+  void debugShow(LudoMatchConfig config, LudoState state, {String matchId = 'debug'}) {
+    _teardown(clearMatch: true);
+    _config = config;
+    _state = state;
+    _matchId = matchId;
+    notifyListeners();
+  }
+
   void restart() {
     final config = _config;
     if (config != null) startMatch(config);

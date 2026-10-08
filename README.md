@@ -6,24 +6,50 @@ Ludo game made with Flutter — play with 2–4 players on one device, against f
 
 ## How to play
 
-* **Roll** the dice by tapping it on your turn.
-* **Move** by tapping a highlighted pawn. Only legal moves are highlighted.
-* A pawn leaves its base on a **6**. Rolling a 6 grants an extra roll (can be turned off).
-* Landing on an opponent's pawn sends it back to its base — unless it sits on a **safe (star) cell**.
-* Get all four pawns to the final cell to win. With the default rules you need the **exact roll** to finish.
+Ludo uses one fixed, standard ruleset (no rule switches):
+
+* **Roll** by tapping the dice in your player panel, then tap a **glowing pawn**. Only legal pawns glow; a single possible move is played for you.
+* A pawn leaves its base only on a **6**, onto your colored start cell. Every **6 rolls again**.
+* **Three 6s in a row**: the third is cancelled and the turn passes (moves from the first two stay).
+* Land on an opponent outside a safe cell to **capture** it (back to base) and **roll again**. If several opponents share the cell, the top one is captured.
+* **8 safe cells**, all marked with a star: the four colored start cells and the four star cells.
+* **No blocks**: any number of pawns may share a cell.
+* Reaching home needs the **exact roll**. First to bring all four pawns home wins; with 3–4 players play continues for the remaining places.
 
 ## Features
 
-* **2–4 players** hot-seat, with any seat assigned to the CPU
-* **CPU difficulty**: Easy (random), Medium (races toward the finish), Hard (evaluates captures, safety, blocks and threats)
-* **Configurable rules**: extra roll on 6, extra roll on capture, three 6s forfeit, exact finish, blocking
-* **Undo** your last move (rewinds the CPU reply played after it too)
-* **Save & resume**: a match survives closing the app — resume it from the main menu
-* **Board themes** and a responsive board that fits any screen
-* **Stacked pawns** with clear counts when several pawns share a cell
-* **Statistics & achievements** tracked across sessions
-* **Sound effects, haptics** and animation-speed control, each toggleable
-* Fully **offline** — no network access required
+* **2–4 players**: *VS Computer* (Easy / Medium / Hard bots) or *Pass & Play*
+* **Save & continue**: leaving a match keeps it; continue it from the home screen
+* **Records**: statistics and achievements
+* **Sound, vibration, game speed and board themes**
+* Portrait-only, responsive layout for small to large phones
+* Fully **offline** — no accounts, no network, no data collection
+
+## Architecture
+
+```
+lib/
+├── app/            MaterialApp, launcher (home), splash, settings
+├── core/           theme (design tokens), audio + haptics, settings, l10n, navigation
+├── shared/         reusable widgets (buttons, cards, scaffold) and dialogs
+└── games/
+    ├── game_definition.dart   how a game plugs into the launcher
+    ├── game_catalog.dart      Ludo + "coming soon" entries
+    └── ludo/
+        ├── engine/      pure rules + engine (state, action) → next state + events, bot
+        ├── models/      immutable match state and config
+        ├── controller/  drives the engine: pacing, animation, audio, saving, bot turns
+        ├── data/        save store, records, achievements, preferences
+        ├── screens/     setup, game, result, how to play, records
+        └── widgets/     board painter, animated board, pawns, dice, panels
+```
+
+The engine has no Flutter, timer, storage or audio dependencies, so a future
+online mode can run the same rules elsewhere. Adding a game means adding a
+`games/<name>/` folder and one catalog entry.
+
+Sound effects other than the dice and step sounds are synthesized by
+`dart run tool/generate_sounds.dart`.
 
 ## Development
 
@@ -39,7 +65,8 @@ GitHub Pages — in the repo settings, set **Settings → Pages → Source** to
 *GitHub Actions* once so the deploy job can run.
 
 ## TODO
-* Multiplayer
+* Online multiplayer
+* More games: Snakes & Ladders, Chess, Carrom
 
 ## LICENSE
 ```license

@@ -145,6 +145,7 @@ class LudoStrings {
   String get pawnsCaptured => 'Pawns captured';
   String get pawnsLost => 'Pawns lost';
   String get sixesRolled => 'Sixes rolled';
+  String get flawlessWins => 'Flawless wins';
   String get passAndPlayGames => 'Pass & play';
   String get vsComputerStats => 'VS COMPUTER';
   String get winsByDifficulty => 'WINS BY DIFFICULTY';

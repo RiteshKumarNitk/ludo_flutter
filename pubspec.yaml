@@ -1,5 +1,5 @@
 name: ludo_flutter
-description: Ludo game with flutter
+description: Offline board games, starting with Ludo
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -11,7 +11,6 @@ dependencies:
   just_audio: ^0.10.6
   provider: ^6.1.2
   shared_preferences: ^2.5.0
-  simple_ripple_animation: ^0.0.9
 
 dev_dependencies:
   flutter_lints: ^4.0.0
@@ -21,8 +20,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/
-    - assets/images/
-    - assets/images/dice/
-    - assets/images/crown/
     - assets/sounds/

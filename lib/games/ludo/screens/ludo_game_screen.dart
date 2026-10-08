@@ -61,7 +61,8 @@ class _LudoGameScreenState extends State<LudoGameScreen> with WidgetsBindingObse
     final s = AppStrings.of(context);
     _menuOpen = true;
     controller.pause();
-    while (mounted) {
+    while (true) {
+      if (!mounted) return;
       final action = await showPauseMenu(context);
       if (!mounted) return;
       switch (action) {

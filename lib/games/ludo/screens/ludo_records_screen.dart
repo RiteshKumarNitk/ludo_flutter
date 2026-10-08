@@ -124,7 +124,7 @@ class _StatsTab extends StatelessWidget {
             _Tile(icon: Icons.gps_fixed_rounded, label: t.pawnsCaptured, value: records.capturesMade),
             _Tile(icon: Icons.heart_broken_rounded, label: t.pawnsLost, value: records.pawnsLost),
             _Tile(icon: Icons.casino_rounded, label: t.sixesRolled, value: records.sixesRolled),
-            _Tile(icon: Icons.shield_rounded, label: 'Flawless wins', value: records.flawlessWins),
+            _Tile(icon: Icons.shield_rounded, label: t.flawlessWins, value: records.flawlessWins),
           ],
         ),
         SectionLabel(t.winsByDifficulty),
@@ -189,7 +189,7 @@ class _AchievementsTab extends StatelessWidget {
               Row(children: [
                 const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 30),
                 const SizedBox(width: AppSpacing.sm),
-                Text(t.unlockedOf(unlocked, ludoAchievements.length), style: AppTypography.title),
+                Expanded(child: Text(t.unlockedOf(unlocked, ludoAchievements.length), style: AppTypography.title)),
               ]),
               const SizedBox(height: AppSpacing.md),
               ClipRRect(
