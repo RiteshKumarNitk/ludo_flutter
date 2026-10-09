@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../core/navigation/app_routes.dart';
+import '../../core/branding/khelora_mark.dart';
+import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_theme.dart';
+import 'home_screen.dart';
 
+///Khelora intro (~1.6 s): the four tiles assemble around the center token,
+///the wordmark and tagline fade in, then the launcher fades in. Runs only
+///at app start; it replaces itself so it never appears again on Back.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -12,14 +17,22 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _controller =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1800));
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 1600));
 
   @override
   void initState() {
     super.initState();
-    _controller.forward().whenComplete(() {
-      if (mounted) Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-    });
+    _controller.forward().whenComplete(_openHome);
+  }
+
+  void _openHome() {
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(PageRouteBuilder<void>(
+      settings: const RouteSettings(name: '/home'),
+      transitionDuration: const Duration(milliseconds: 450),
+      pageBuilder: (_, __, ___) => const HomeScreen(),
+      transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+    ));
   }
 
   @override
@@ -30,94 +43,49 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+    double phase(double start, double end, [Curve curve = Curves.easeOut]) =>
+        curve.transform(((_controller.value - start) / (end - start)).clamp(0.0, 1.0));
+
     return Scaffold(
-      backgroundColor: const Color(0xFF11182B),
+      backgroundColor: KheloraColors.navy,
       body: Center(
         child: AnimatedBuilder(
           animation: _controller,
-          builder: (context, child) {
-            // Sequence timings
-            // 0.0 - 0.3: Logo symbol fades in and scales up
-            // 0.1 - 0.6: 4 tiles animate into position (already handled by their own offsets, but we can do it here)
-            // 0.4 - 0.8: Khelora wordmark fades in
-            // 0.6 - 1.0: Tagline fades in
-            
-            final symbolT = Curves.easeOutCubic.transform((_controller.value / 0.3).clamp(0.0, 1.0));
-            final tilesT = Curves.easeOutCubic.transform(((_controller.value - 0.1) / 0.5).clamp(0.0, 1.0));
-            final wordmarkT = Curves.easeIn.transform(((_controller.value - 0.4) / 0.4).clamp(0.0, 1.0));
-            final taglineT = Curves.easeIn.transform(((_controller.value - 0.6) / 0.4).clamp(0.0, 1.0));
-
+          builder: (context, _) {
+            final symbol = phase(0.0, 0.25);
+            final tiles = phase(0.05, 0.7, Curves.linear);
+            final word = phase(0.5, 0.8);
+            final tagline = phase(0.68, 0.95);
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo Symbol
                 Opacity(
-                  opacity: symbolT,
+                  opacity: symbol,
                   child: Transform.scale(
-                    scale: 0.8 + (0.2 * symbolT),
-                    child: SizedBox(
-                      width: 100,
-                      height: 100,
-                      child: Stack(
-                        children: [
-                          _buildTile(const Color(0xFFFF6F78), 0, 0, tilesT, -40, -40), // Top Left
-                          _buildTile(const Color(0xFF4CD7A0), 1, 0, tilesT, 40, -40),  // Top Right
-                          _buildTile(const Color(0xFF6E9BFF), 0, 1, tilesT, -40, 40),  // Bottom Left
-                          _buildTile(const Color(0xFFF6C453), 1, 1, tilesT, 40, 40),   // Bottom Right
-                        ],
-                      ),
-                    ),
+                    scale: 0.85 + 0.15 * symbol,
+                    child: KheloraMark(size: 128, progress: tiles),
                   ),
                 ),
-                const SizedBox(height: 24),
-                // Wordmark
+                const SizedBox(height: AppSpacing.xl),
                 Opacity(
-                  opacity: wordmarkT,
-                  child: Text(
-                    'Khelora',
-                    style: AppTypography.display.copyWith(fontSize: 48, color: Colors.white, letterSpacing: 2),
+                  opacity: word,
+                  child: Transform.translate(
+                    offset: Offset(0, 12 * (1 - word)),
+                    child: const KheloraWordmark(fontSize: 46),
                   ),
                 ),
-                const SizedBox(height: 8),
-                // Tagline
+                const SizedBox(height: AppSpacing.sm),
                 Opacity(
-                  opacity: taglineT,
+                  opacity: tagline,
                   child: Text(
-                    'Play Your Way.',
-                    style: AppTypography.subtitle.copyWith(fontSize: 16, color: Colors.white70, letterSpacing: 1),
+                    s.tagline,
+                    style: AppTypography.subtitle.copyWith(color: AppColors.textSecondary, letterSpacing: 1.2),
                   ),
                 ),
               ],
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTile(Color color, int x, int y, double t, double offsetX, double offsetY) {
-    // x: 0 = left, 1 = right
-    // y: 0 = top, 1 = bottom
-    // When t=0, they are at offsetX/Y. When t=1, they are in their final positions (which is 0 offset from grid)
-    const size = 46.0;
-    const spacing = 8.0;
-    
-    // Final positions inside the 100x100 container
-    final finalLeft = x == 0 ? 0.0 : size + spacing;
-    final finalTop = y == 0 ? 0.0 : size + spacing;
-    
-    final currentLeft = finalLeft + offsetX * (1 - t);
-    final currentTop = finalTop + offsetY * (1 - t);
-    
-    return Positioned(
-      left: currentLeft,
-      top: currentTop,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

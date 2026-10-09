@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/branding/khelora_mark.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/dialogs/game_dialogs.dart';
@@ -14,7 +15,7 @@ Future<void> showAppAboutDialog(BuildContext context) {
     context: context,
     barrierColor: AppColors.scrim,
     builder: (dialogContext) => GameDialog(
-      icon: Icons.casino_rounded,
+      leading: const KheloraMark(size: 72, ringColor: AppColors.surface),
       title: '${s.appName} · ${s.version(appVersion)}',
       message: s.aboutBody,
       actions: [

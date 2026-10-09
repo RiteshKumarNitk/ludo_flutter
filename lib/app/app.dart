@@ -34,7 +34,7 @@ class BoardGamesApp extends StatelessWidget {
         for (final game in GameCatalog.games) ...game.providers,
       ],
       child: MaterialApp(
-        title: 'Ludo',
+        title: 'Khelora',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
         localizationsDelegates: const [AppStrings.delegate],

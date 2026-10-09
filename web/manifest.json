@@ -1,11 +1,11 @@
 {
-    "name": "ludo_flutter",
-    "short_name": "ludo_flutter",
+    "name": "Khelora",
+    "short_name": "Khelora",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#11182B",
+    "theme_color": "#11182B",
+    "description": "Khelora - classic board games to play offline. Play Your Way.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

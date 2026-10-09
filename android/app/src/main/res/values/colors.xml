@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Khelora deep navy, shared by the launcher icon and launch screens -->
     <color name="splash_color">#11182B</color>
+    <color name="ic_launcher_background">#11182B</color>
 </resources>

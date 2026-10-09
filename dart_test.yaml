@@ -1,3 +1,5 @@
 tags:
   screenshots:
     skip: "Visual review only. Run: flutter test --tags screenshots --run-skipped --update-goldens"
+  brand:
+    skip: "Asset generator. Run: flutter test test/_tools --tags brand --run-skipped"

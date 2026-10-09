@@ -7,6 +7,9 @@ import '../widgets/game_button.dart';
 ///Dialog frame matching the design system
 class GameDialog extends StatelessWidget {
   final IconData? icon;
+
+  ///Custom header artwork shown instead of [icon]
+  final Widget? leading;
   final Color iconColor;
   final String title;
   final String? message;
@@ -15,6 +18,7 @@ class GameDialog extends StatelessWidget {
   const GameDialog({
     super.key,
     this.icon,
+    this.leading,
     this.iconColor = AppColors.primary,
     required this.title,
     this.message,
@@ -41,7 +45,10 @@ class GameDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (icon != null) ...[
+                if (leading != null) ...[
+                  leading!,
+                  const SizedBox(height: AppSpacing.lg),
+                ] else if (icon != null) ...[
                   Container(
                     width: 64,
                     height: 64,
@@ -150,4 +157,38 @@ Future<PauseAction> showPauseMenu(BuildContext context) async {
     ),
   );
   return result ?? PauseAction.resume;
+}
+
+///"Exit the app?" confirmation. Stay is the safe default (and what tapping
+///outside does); resolves to true only when Exit is pressed.
+Future<bool> showExitDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String stayLabel,
+  required String exitLabel,
+}) async {
+  final result = await showDialog<bool>(
+    context: context,
+    barrierColor: AppColors.scrim,
+    builder: (context) => GameDialog(
+      icon: Icons.waving_hand_rounded,
+      title: title,
+      message: message,
+      actions: [
+        GameButton(
+          label: stayLabel,
+          icon: Icons.play_arrow_rounded,
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        GameButton(
+          label: exitLabel,
+          icon: Icons.logout_rounded,
+          variant: GameButtonVariant.ghost,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
 }

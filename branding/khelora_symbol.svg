@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="g0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FADB94"/><stop offset="0.55" stop-color="#F6C453"/></linearGradient>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8FE6C2"/><stop offset="0.55" stop-color="#4CD7A0"/></linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFA3A9"/><stop offset="0.55" stop-color="#FF6F78"/></linearGradient>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A4C0FF"/><stop offset="0.55" stop-color="#6E9BFF"/></linearGradient>
+  </defs>
+  <rect x="358.4" y="112.6" width="307.2" height="307.2" rx="71.68" fill="url(#g0)" transform="rotate(45 512.0 266.2)"/>
+  <rect x="604.2" y="358.4" width="307.2" height="307.2" rx="71.68" fill="url(#g1)" transform="rotate(45 757.8 512.0)"/>
+  <rect x="358.4" y="604.2" width="307.2" height="307.2" rx="71.68" fill="url(#g2)" transform="rotate(45 512.0 757.8)"/>
+  <rect x="112.6" y="358.4" width="307.2" height="307.2" rx="71.68" fill="url(#g3)" transform="rotate(45 266.2 512.0)"/>
+  <circle cx="512" cy="512" r="117.8" fill="#11182B"/>
+  <circle cx="512" cy="512" r="87.0" fill="#FFFFFF"/>
+</svg>

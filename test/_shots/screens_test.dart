@@ -85,6 +85,22 @@ void main() {
   setUpAll(loadFonts);
   const sizes = {'a320': Size(320, 568), 'b390': Size(390, 844), 'c430': Size(430, 932)};
   for (final e in sizes.entries) {
+    testWidgets('splash ${e.key}', (tester) async {
+      SharedPreferences.setMockInitialValues({'settings_sound': false});
+      tester.view.devicePixelRatio = 2;
+      tester.view.physicalSize = e.value * 2;
+      tester.view.padding = const FakeViewPadding(top: 48, bottom: 32);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(const BoardGamesApp());
+      await frames(tester, 500);
+      await shot(tester, '${e.key}_00a_splash_mid');
+      await frames(tester, 1000);
+      await shot(tester, '${e.key}_00b_splash_end');
+      await frames(tester, 1500);
+      await tester.pumpWidget(const SizedBox());
+      await frames(tester, 2000);
+    });
+
     testWidgets('screens ${e.key}', (tester) async {
       SharedPreferences.setMockInitialValues({'settings_sound': false, 'settings_haptics': false});
       tester.view.devicePixelRatio = 2;
@@ -97,6 +113,12 @@ void main() {
       final c = read<LudoController>(tester);
 
       await shot(tester, '${k}_01_home');
+      showExitDialog(tester.element(find.byType(Scaffold).last),
+          title: 'Exit Khelora?', message: 'Are you sure you want to exit the game?', stayLabel: 'STAY', exitLabel: 'EXIT');
+      await frames(tester, 600);
+      await shot(tester, '${k}_01b_exit_dialog');
+      nav(tester).pop();
+      await frames(tester, 400);
 
       nav(tester).pushNamed(LudoRoutes.setup);
       await frames(tester);

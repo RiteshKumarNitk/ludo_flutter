@@ -49,7 +49,7 @@ class AppShadows {
 
   static const List<BoxShadow> board = [
     BoxShadow(color: Color(0x80000000), blurRadius: 30, offset: Offset(0, 12)),
-    BoxShadow(color: Color(0x337C5CFF), blurRadius: 40, spreadRadius: 2),
+    BoxShadow(color: Color(0x336E9BFF), blurRadius: 40, spreadRadius: 2),
   ];
 
   static const Color edge = AppColors.backgroundBottom;

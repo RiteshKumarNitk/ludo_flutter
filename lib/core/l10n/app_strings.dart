@@ -16,7 +16,8 @@ class AppStrings {
   static AppStrings of(BuildContext context) => Localizations.of<AppStrings>(context, AppStrings) ?? en;
 
   //Launcher
-  String get appName => 'Ludo';
+  String get appName => 'Khelora';
+  String get tagline => 'Play Your Way.';
   String get homeGreeting => 'Ready to play?';
   String get homeEyebrow => 'GAME ROOM';
   String get play => 'PLAY';
@@ -29,6 +30,12 @@ class AppStrings {
   String get records => 'Records';
   String get settings => 'Settings';
   String get about => 'About';
+  String get exit => 'Exit';
+  String get exitTitle => 'Exit Khelora?';
+  String get exitBody => 'Are you sure you want to exit the game?';
+  String get stay => 'STAY';
+  String get exitButton => 'EXIT';
+  String get featuredGame => 'FEATURED GAME';
 
   //Settings
   String get general => 'GENERAL';

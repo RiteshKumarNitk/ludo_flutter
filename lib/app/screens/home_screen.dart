@@ -1,19 +1,25 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/branding/khelora_mark.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../core/navigation/route_observer.dart';
 import '../../core/theme/app_theme.dart';
 import '../../games/game_catalog.dart';
 import '../../games/game_definition.dart';
+import '../../shared/dialogs/game_dialogs.dart';
 import '../../shared/widgets/game_button.dart';
 import '../../shared/widgets/game_card.dart';
 import '../../shared/widgets/game_scaffold.dart';
 import '../../shared/widgets/round_icon_button.dart';
 import 'about_dialog.dart';
 
-///Game launcher: the featured game front and center, upcoming games below
+///Khelora launcher: brand header, the featured game front and center,
+///upcoming games below. Android Back asks before leaving the app.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -21,13 +27,21 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin, RouteAware {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, RouteAware {
   late final AnimationController _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
     ..forward();
+
+  ///Slow ambient loop for the logo breathing and the drifting tiles
+  late final AnimationController _ambient = AnimationController(vsync: this, duration: const Duration(seconds: 12))
+    ..repeat();
   ResumableMatch? _resumable;
   bool _opening = false;
+  bool _exitDialogOpen = false;
 
   GameDefinition get _featured => GameCatalog.featured;
+
+  ///Closing the app from inside is an Android convention only
+  static bool get _canExit => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   @override
   void initState() {
@@ -49,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void dispose() {
     appRouteObserver.unsubscribe(this);
     _intro.dispose();
+    _ambient.dispose();
     super.dispose();
   }
 
@@ -67,6 +82,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if (!ok) _refresh();
   }
 
+  ///Saved matches are untouched: Continue is still there next launch
+  Future<void> _confirmExit() async {
+    if (_exitDialogOpen) return;
+    _exitDialogOpen = true;
+    final s = AppStrings.of(context);
+    final exit = await showExitDialog(
+      context,
+      title: s.exitTitle,
+      message: s.exitBody,
+      stayLabel: s.stay,
+      exitLabel: s.exitButton,
+    );
+    _exitDialogOpen = false;
+    if (exit) await SystemNavigator.pop();
+  }
+
   Widget _staggered(int index, Widget child) {
     final start = (index * 0.12).clamp(0.0, 0.6);
     final animation = CurvedAnimation(
@@ -80,155 +111,191 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Future<bool?> _showExitConfirmation(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.xlAll),
-          title: Text('Exit Khelora?', style: AppTypography.title),
-          content: Text('Are you sure you want to exit the game?', style: AppTypography.body),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Exit', style: AppTypography.button.copyWith(color: AppColors.textSecondary)),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              style: TextButton.styleFrom(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              ),
-              child: Text('Stay', style: AppTypography.button.copyWith(color: AppColors.primary)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final s = AppStrings.of(context);
     final game = _featured;
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final shouldExit = await _showExitConfirmation(context);
-        if (shouldExit == true) {
-          SystemNavigator.pop();
-        }
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmExit();
       },
-      child: GameScaffold(
-      showBack: false,
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.md, AppSpacing.gutter, AppSpacing.xl),
-        children: [
-          _staggered(
-            0,
-            Row(
-              children: [
-                const _Logo(),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(s.homeEyebrow, style: AppTypography.label),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(s.homeGreeting, maxLines: 1, style: AppTypography.title),
-                      ),
-                    ],
+      child: Scaffold(
+        backgroundColor: AppColors.backgroundBottom,
+        body: GameBackground(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: RepaintBoundary(
+                    child: AnimatedBuilder(
+                      animation: _ambient,
+                      builder: (context, _) => CustomPaint(painter: _DriftingTilesPainter(_ambient.value)),
+                    ),
                   ),
                 ),
-                if (game.recordsRoute != null)
-                  RoundIconButton(
-                    icon: Icons.emoji_events_rounded,
-                    color: AppColors.gold,
-                    tooltip: s.records,
-                    onPressed: () => Navigator.of(context).pushNamed(game.recordsRoute!),
-                  ),
-                const SizedBox(width: AppSpacing.sm),
-                RoundIconButton(
-                  icon: Icons.settings_rounded,
-                  tooltip: s.settings,
-                  onPressed: () => Navigator.of(context).pushNamed(AppRoutes.settings),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          _staggered(1, _FeaturedCard(game: game, resumable: _resumable, onContinue: _continue)),
-          const SizedBox(height: AppSpacing.sm),
-          _staggered(
-            2,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SectionLabel(s.moreGames),
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (final upcoming in GameCatalog.comingSoon) ...[
-                        if (upcoming != GameCatalog.comingSoon.first) const SizedBox(width: AppSpacing.md),
-                        Expanded(child: _ComingSoonCard(game: upcoming)),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          _staggered(
-            3,
-            Center(
-              child: TextButton.icon(
-                onPressed: () => showAppAboutDialog(context),
-                icon: const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.textMuted),
-                label: Text(s.about, style: AppTypography.caption),
               ),
-            ),
+              SafeArea(
+                child: ListView(
+                  padding:
+                      const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.md, AppSpacing.gutter, AppSpacing.xl),
+                  children: [
+                    _staggered(
+                      0,
+                      Row(
+                        children: [
+                          AnimatedBuilder(
+                            animation: _ambient,
+                            builder: (context, child) => Transform.scale(
+                              scale: 1 + 0.04 * math.sin(_ambient.value * 2 * math.pi * 3),
+                              child: child,
+                            ),
+                            child: const KheloraMark(size: 52, ringColor: AppColors.backgroundTop),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: KheloraWordmark(fontSize: 28),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(s.tagline, maxLines: 1, style: AppTypography.caption.copyWith(letterSpacing: 0.6)),
+                              ],
+                            ),
+                          ),
+                          if (game.recordsRoute != null)
+                            RoundIconButton(
+                              icon: Icons.emoji_events_rounded,
+                              color: AppColors.gold,
+                              tooltip: s.records,
+                              onPressed: () => Navigator.of(context).pushNamed(game.recordsRoute!),
+                            ),
+                          const SizedBox(width: AppSpacing.sm),
+                          RoundIconButton(
+                            icon: Icons.settings_rounded,
+                            tooltip: s.settings,
+                            onPressed: () => Navigator.of(context).pushNamed(AppRoutes.settings),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    _staggered(1, _FeaturedCard(game: game, resumable: _resumable, onContinue: _continue)),
+                    const SizedBox(height: AppSpacing.sm),
+                    _staggered(
+                      2,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SectionLabel(s.moreGames),
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                for (final upcoming in GameCatalog.comingSoon) ...[
+                                  if (upcoming != GameCatalog.comingSoon.first) const SizedBox(width: AppSpacing.md),
+                                  Expanded(child: _ComingSoonCard(game: upcoming)),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    _staggered(
+                      3,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _FooterLink(
+                            icon: Icons.info_outline_rounded,
+                            label: s.about,
+                            onTap: () => showAppAboutDialog(context),
+                          ),
+                          if (_canExit) ...[
+                            const SizedBox(width: AppSpacing.md),
+                            _FooterLink(icon: Icons.logout_rounded, label: s.exit, onTap: _confirmExit),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
     );
   }
 }
 
-class _Logo extends StatelessWidget {
-  const _Logo();
+///Small outlined pill for secondary launcher actions (About, Exit)
+class _FooterLink extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  const _FooterLink({required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    const colors = [AppColors.playerRed, AppColors.playerGreen, AppColors.playerYellow, AppColors.playerBlue];
-    return Container(
-      width: 48,
-      height: 48,
-      padding: const EdgeInsets.all(5),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: AppRadius.mdAll,
-        boxShadow: AppShadows.soft,
-      ),
-      child: GridView.count(
-        crossAxisCount: 2,
-        mainAxisSpacing: 3,
-        crossAxisSpacing: 3,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.zero,
+    return GameCard(
+      onTap: onTap,
+      shadows: null,
+      borderRadius: AppRadius.pill,
+      color: AppColors.surface.withValues(alpha: 0.6),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm + 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          for (final c in colors)
-            DecoratedBox(decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(5))),
+          Icon(icon, size: 18, color: AppColors.textSecondary),
+          const SizedBox(width: AppSpacing.sm),
+          Text(label, style: AppTypography.subtitle.copyWith(fontSize: 14, color: AppColors.textSecondary)),
         ],
       ),
     );
   }
+}
+
+///Faint brand tiles drifting slowly behind the launcher content
+class _DriftingTilesPainter extends CustomPainter {
+  final double t;
+  _DriftingTilesPainter(this.t);
+
+  static final List<(double, double, double, double, int)> _tiles = () {
+    final r = math.Random(5);
+    return [
+      for (int i = 0; i < 9; i++) (r.nextDouble(), r.nextDouble(), 26 + r.nextDouble() * 34, r.nextDouble(), i % 4),
+    ];
+  }();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final (x, y, side, phase, colorIndex) in _tiles) {
+      final a = (t + phase) * 2 * math.pi;
+      final center = Offset(
+        x * size.width + math.sin(a) * 18,
+        ((y + t * 0.15) % 1.0) * (size.height + side * 2) - side,
+      );
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.rotate(math.pi / 4 + math.sin(a) * 0.3);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromCenter(center: Offset.zero, width: side, height: side), Radius.circular(side * 0.22)),
+        Paint()..color = KheloraColors.tiles[colorIndex].withValues(alpha: 0.07),
+      );
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DriftingTilesPainter old) => old.t != t;
 }
 
 class _FeaturedCard extends StatelessWidget {
@@ -250,7 +317,7 @@ class _FeaturedCard extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF5B3FE0), AppColors.surface],
+        colors: [Color(0xFF2B4183), AppColors.surface],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -293,12 +360,12 @@ class _FeaturedCard extends StatelessWidget {
             child: AnimatedSize(
               duration: AppMotion.normal,
               child: resumable == null
-                  ? GameButton(label: s.play, icon: Icons.play_arrow_rounded, onPressed: play, height: 64)
+                  ? GameButton(label: s.play, icon: Icons.play_arrow_rounded, onPressed: play, height: 64, shine: true)
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         GameButton(
-                            label: s.continueMatch, icon: Icons.play_arrow_rounded, onPressed: onContinue, height: 64),
+                            label: s.continueMatch, icon: Icons.play_arrow_rounded, onPressed: onContinue, height: 64, shine: true),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                           child: Center(child: _SavedMatchChip(match: resumable!)),

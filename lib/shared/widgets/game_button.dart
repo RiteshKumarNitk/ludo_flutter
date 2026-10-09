@@ -15,6 +15,9 @@ class GameButton extends StatefulWidget {
   final bool expand;
   final double height;
 
+  ///Periodic light sweep across the face, for the one main call to action
+  final bool shine;
+
   const GameButton({
     super.key,
     required this.label,
@@ -23,14 +26,31 @@ class GameButton extends StatefulWidget {
     this.variant = GameButtonVariant.primary,
     this.expand = true,
     this.height = 58,
+    this.shine = false,
   });
 
   @override
   State<GameButton> createState() => _GameButtonState();
 }
 
-class _GameButtonState extends State<GameButton> {
+class _GameButtonState extends State<GameButton> with SingleTickerProviderStateMixin {
   bool _pressed = false;
+  ///Only created for buttons that shine
+  AnimationController? _shine;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.shine) {
+      _shine = AnimationController(vsync: this, duration: const Duration(milliseconds: 3600))..repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _shine?.dispose();
+    super.dispose();
+  }
 
   (Color face, Color lip, Color text) get _colors {
     switch (widget.variant) {
@@ -119,9 +139,42 @@ class _GameButtonState extends State<GameButton> {
                         colors: [AppColors.lighten(face, 0.18), face],
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      child: Center(child: content),
+                    child: Stack(
+                      children: [
+                        if (_shine != null && enabled)
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: AppRadius.lgAll,
+                              child: AnimatedBuilder(
+                                animation: _shine!,
+                                builder: (context, _) {
+                                  //Sweep during the first 35% of each cycle, then rest
+                                  final p = (_shine!.value / 0.35).clamp(0.0, 1.0);
+                                  return FractionalTranslation(
+                                    translation: Offset(-1.2 + 2.4 * p, 0),
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                          colors: [
+                                            Colors.white.withValues(alpha: 0),
+                                            Colors.white.withValues(alpha: 0.35),
+                                            Colors.white.withValues(alpha: 0),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          child: Center(child: content),
+                        ),
+                      ],
                     ),
                   ),
                 ),
