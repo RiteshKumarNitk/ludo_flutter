@@ -208,15 +208,18 @@ class _TopBar extends StatelessWidget {
     );
   }
 }
-///Board with the four player corners and the turn status
+
+///Board with the four player corners and the turn status. Panel, dice and
+///board sizes adapt to the space so tall phones get a bigger dice instead
+///of empty bands, and small phones keep the whole board visible.
 class _Table extends StatelessWidget {
   final LudoController controller;
   final BoardTheme theme;
   const _Table({required this.controller, required this.theme});
 
-  static const double _panelHeight = 64;
   static const double _gap = 10;
-  static const double _statusHeight = 40;
+  static const double _statusHeight = 46;
+  static const double _rim = 6;
 
   @override
   Widget build(BuildContext context) {
@@ -225,6 +228,7 @@ class _Table extends StatelessWidget {
     final t = LudoStrings.of(context);
     final selectable = c.selectablePawns;
     final seated = {for (final s in state.seats) s.color: s};
+    final choosing = selectable.isNotEmpty;
 
     final pawns = [
       for (final seat in state.seats)
@@ -235,34 +239,10 @@ class _Table extends StatelessWidget {
             step: c.displayStep(seat.color, i),
             arrival: state.arrivals[seat.color]![i],
             selectable: seat.color == state.currentColor && selectable.contains(i),
+            //While choosing, the mover's pawns that cannot move step back visually
+            dimmed: choosing && seat.color == state.currentColor && !selectable.contains(i),
           ),
     ];
-
-    Widget panel(LudoColor color, {required bool mirrored}) {
-      final seat = seated[color];
-      if (seat == null) return const Expanded(child: SizedBox(height: _panelHeight));
-      final active = !state.isFinished && state.currentColor == color;
-      return Expanded(
-        child: PlayerPanel(
-          seat: seat,
-          displayName: seat.name,
-          color: theme.colorOf(color),
-          active: active,
-          mirrored: mirrored,
-          place: state.placeOf(color),
-          height: _panelHeight,
-          status: _panelStatus(c, color, t),
-          dice: LudoDice(
-            value: state.dice,
-            rolling: c.isRolling,
-            canRoll: c.canRoll,
-            color: theme.colorOf(color),
-            onRoll: c.rollDice,
-            size: _panelHeight - 14,
-          ),
-        ),
-      );
-    }
 
     final current = state.currentSeat;
     final turnTitle = c.isHumanTurn && c.config.mode == LudoMode.vsComputer && c.config.humanCount == 1
@@ -270,9 +250,42 @@ class _Table extends StatelessWidget {
         : t.turnOf(current.name);
 
     return LayoutBuilder(builder: (context, constraints) {
-      final maxW = constraints.maxWidth - AppSpacing.md * 2;
-      final maxH = constraints.maxHeight - _panelHeight * 2 - _gap * 4 - _statusHeight;
-      final boardSize = math.max(220.0, math.min(math.min(maxW, maxH), 620.0));
+      final maxW = math.min(constraints.maxWidth - AppSpacing.md * 2, 620.0);
+      final spare = constraints.maxHeight - maxW - _statusHeight - _gap * 4;
+      final panelHeight = (spare / 2).clamp(60.0, 92.0);
+      final maxH = constraints.maxHeight - panelHeight * 2 - _gap * 4 - _statusHeight;
+      final boardSize = math.max(220.0, math.min(maxW, maxH));
+
+      Widget panel(LudoColor color, {required bool mirrored}) {
+        final seat = seated[color];
+        if (seat == null) return Expanded(child: SizedBox(height: panelHeight));
+        final steps = state.stepsOf(color);
+        return Expanded(
+          child: PlayerPanel(
+            seat: seat,
+            displayName: seat.name,
+            color: theme.colorOf(color),
+            active: !state.isFinished && state.currentColor == color,
+            mirrored: mirrored,
+            place: state.placeOf(color),
+            height: panelHeight,
+            progress: PawnProgress(
+              home: steps.where((s) => s == 56).length,
+              onBoard: steps.where((s) => s >= 0 && s < 56).length,
+            ),
+            placeLabel: state.placeOf(color) == null ? null : '${t.finishedLabel} ${t.ordinal(state.placeOf(color)!)}',
+            dice: LudoDice(
+              value: state.dice,
+              rolling: c.isRolling,
+              canRoll: c.canRoll,
+              color: theme.colorOf(color),
+              onRoll: c.rollDice,
+              size: panelHeight - 14,
+            ),
+          ),
+        );
+      }
+
       return Center(
         child: FittedBox(
           fit: BoxFit.scaleDown,
@@ -287,21 +300,29 @@ class _Table extends StatelessWidget {
                   panel(LudoColor.yellow, mirrored: true),
                 ]),
                 const SizedBox(height: _gap),
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    LudoBoard(
-                      size: boardSize,
-                      theme: theme,
-                      activeColors: seated.keys.toSet(),
-                      turnColor: state.isFinished ? null : state.currentColor,
-                      pawns: pawns,
-                      stepDuration: c.pacing.step,
-                      returnDuration: c.pacing.captureReturn,
-                      onPawnTap: (color, pawn) => c.selectPawn(pawn),
+                //Raised frame around the painted board
+                Container(
+                  padding: const EdgeInsets.all(_rim),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(boardSize / 15 * 0.9 + _rim),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppColors.surfaceRaised, AppColors.surfaceSunken],
                     ),
-                    _BannerOverlay(banner: c.banner, theme: theme, seated: seated),
-                  ],
+                    border: Border.all(color: AppColors.outline, width: 1.5),
+                    boxShadow: AppShadows.board,
+                  ),
+                  child: LudoBoard(
+                    size: boardSize - _rim * 2,
+                    theme: theme,
+                    activeColors: seated.keys.toSet(),
+                    turnColor: state.isFinished ? null : state.currentColor,
+                    pawns: pawns,
+                    stepDuration: c.pacing.step,
+                    returnDuration: c.pacing.captureReturn,
+                    onPawnTap: (color, pawn) => c.selectPawn(pawn),
+                  ),
                 ),
                 const SizedBox(height: _gap),
                 Row(children: [
@@ -310,15 +331,28 @@ class _Table extends StatelessWidget {
                   panel(LudoColor.blue, mirrored: true),
                 ]),
                 const SizedBox(height: _gap),
+                //Turn status, briefly replaced by event banners (six, capture,
+                //extra roll...) so no announcement ever covers the board
                 SizedBox(
                   height: _statusHeight,
-                  child: state.isFinished
-                      ? const SizedBox.shrink()
-                      : TurnStatus(
-                          color: theme.colorOf(current.color),
-                          title: turnTitle,
-                          hint: _hint(c, t),
-                        ),
+                  child: AnimatedSwitcher(
+                    duration: AppMotion.normal,
+                    switchInCurve: Curves.easeOutBack,
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(scale: animation, child: child),
+                    ),
+                    child: c.banner != null
+                        ? _EventBanner(key: ValueKey(c.banner!.id), banner: c.banner!, theme: theme, seated: seated)
+                        : state.isFinished
+                            ? const SizedBox.shrink()
+                            : TurnStatus(
+                                key: const ValueKey('status'),
+                                color: theme.colorOf(current.color),
+                                title: turnTitle,
+                                hint: _hint(c, t),
+                              ),
+                  ),
                 ),
               ],
             ),
@@ -345,31 +379,14 @@ class _Table extends StatelessWidget {
     }
   }
 
-  static String _panelStatus(LudoController c, LudoColor color, LudoStrings t) {
-    final state = c.state;
-    final place = state.placeOf(color);
-    if (place != null) return '${t.finishedLabel} ${t.ordinal(place)}';
-    if (state.currentColor != color || state.isFinished) return t.pawnsHome(state.pawnsHome(color));
-    if (c.isRolling) return t.rolling;
-    if (c.isAnimating) return t.moving;
-    if (state.currentSeat.isBot) return t.botThinking;
-    switch (state.phase) {
-      case LudoPhase.roll:
-        return t.tapDice;
-      case LudoPhase.move:
-        return t.pickPawn;
-      case LudoPhase.turnOver:
-      case LudoPhase.finished:
-        return t.pawnsHome(state.pawnsHome(color));
-    }
-  }
 }
 
-class _BannerOverlay extends StatelessWidget {
-  final LudoBanner? banner;
+///Short announcement (six, capture, extra roll, ...) shown in the status slot
+class _EventBanner extends StatelessWidget {
+  final LudoBanner banner;
   final BoardTheme theme;
   final Map<LudoColor, LudoSeat> seated;
-  const _BannerOverlay({required this.banner, required this.theme, required this.seated});
+  const _EventBanner({super.key, required this.banner, required this.theme, required this.seated});
 
   IconData _icon(LudoBannerKind kind) {
     switch (kind) {
@@ -391,37 +408,31 @@ class _BannerOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final b = banner;
     final t = LudoStrings.of(context);
-    return IgnorePointer(
-      child: AnimatedSwitcher(
-        duration: AppMotion.normal,
-        switchInCurve: Curves.easeOutBack,
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(scale: animation, child: child),
+    final color = theme.colorOf(b.color);
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [color.withValues(alpha: 0.4), AppColors.surface]),
+          borderRadius: AppRadius.pill,
+          border: Border.all(color: color, width: 2.5),
+          boxShadow: AppShadows.glow(color, strength: 0.6),
         ),
-        child: b == null
-            ? const SizedBox.shrink()
-            : Container(
-                key: ValueKey(b.id),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm + 2),
-                decoration: BoxDecoration(
-                  color: AppColors.surface.withValues(alpha: 0.94),
-                  borderRadius: AppRadius.pill,
-                  border: Border.all(color: theme.colorOf(b.color), width: 2.5),
-                  boxShadow: AppShadows.card,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(_icon(b.kind), color: theme.colorOf(b.color), size: 22),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      t.banner(b, seated[b.color]?.name ?? b.color.label),
-                      style: AppTypography.subtitle.copyWith(fontWeight: FontWeight.w900),
-                    ),
-                  ],
-                ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(_icon(b.kind), color: AppColors.lighten(color, 0.3), size: 22),
+            const SizedBox(width: AppSpacing.sm),
+            Flexible(
+              child: Text(
+                t.banner(b, seated[b.color]?.name ?? b.color.label),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.subtitle.copyWith(fontWeight: FontWeight.w900),
               ),
+            ),
+          ],
+        ),
       ),
     );
   }

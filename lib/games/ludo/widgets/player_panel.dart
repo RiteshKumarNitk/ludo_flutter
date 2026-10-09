@@ -4,6 +4,15 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/game_card.dart';
 import '../models/ludo_models.dart';
 
+///Where a seat's four pawns are
+class PawnProgress {
+  final int home;
+  final int onBoard;
+  const PawnProgress({required this.home, required this.onBoard});
+
+  int get inBase => 4 - home - onBoard;
+}
+
 ///Corner card for one seat. While it is that seat's turn the panel lights
 ///up in the seat color and its avatar slot turns into the dice, so the
 ///dice always sits right next to the player who rolls it.
@@ -15,7 +24,10 @@ class PlayerPanel extends StatelessWidget {
 
   ///Right-hand panels mirror their layout so the dice sits at the outer edge
   final bool mirrored;
-  final String status;
+  final PawnProgress progress;
+
+  ///Shown instead of the progress once the seat has finished
+  final String? placeLabel;
   final int? place;
   final Widget dice;
   final double height;
@@ -27,8 +39,9 @@ class PlayerPanel extends StatelessWidget {
     required this.color,
     required this.active,
     required this.mirrored,
-    required this.status,
+    required this.progress,
     required this.dice,
+    this.placeLabel,
     this.place,
     this.height = 64,
   });
@@ -40,7 +53,9 @@ class PlayerPanel extends StatelessWidget {
       child: AnimatedSwitcher(
         duration: AppMotion.normal,
         transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
-        child: active ? KeyedSubtree(key: const ValueKey('dice'), child: dice) : _Avatar(key: const ValueKey('avatar'), seat: seat, color: color, place: place),
+        child: active
+            ? KeyedSubtree(key: const ValueKey('dice'), child: dice)
+            : _Avatar(key: const ValueKey('avatar'), seat: seat, color: color, place: place),
       ),
     );
     final text = Expanded(
@@ -52,45 +67,91 @@ class PlayerPanel extends StatelessWidget {
             displayName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.subtitle.copyWith(fontSize: 14, fontWeight: FontWeight.w900),
+            style: AppTypography.subtitle.copyWith(fontSize: height >= 72 ? 15.5 : 14, fontWeight: FontWeight.w900),
           ),
-          const SizedBox(height: 2),
-          Text(
-            status,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTypography.caption.copyWith(
-              fontSize: 11.5,
-              color: active ? AppColors.lighten(color, 0.35) : AppColors.textMuted,
+          const SizedBox(height: 4),
+          if (placeLabel != null)
+            Text(
+              placeLabel!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.caption.copyWith(fontSize: 11.5, color: AppColors.gold),
+            )
+          else
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: mirrored ? Alignment.centerRight : Alignment.centerLeft,
+              child: _ProgressPips(progress: progress, color: color, mirrored: mirrored),
             ),
-          ),
         ],
       ),
     );
 
-    return AnimatedContainer(
-      duration: AppMotion.normal,
-      curve: Curves.easeOut,
-      height: height,
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 7),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.lgAll,
-        gradient: active
-            ? LinearGradient(
-                begin: mirrored ? Alignment.centerRight : Alignment.centerLeft,
-                end: mirrored ? Alignment.centerLeft : Alignment.centerRight,
-                colors: [color.withValues(alpha: 0.45), AppColors.surface],
-              )
-            : null,
-        color: active ? null : AppColors.surface.withValues(alpha: 0.7),
-        border: Border.all(color: active ? color : AppColors.outline, width: active ? 2.5 : 1.5),
-        boxShadow: active ? AppShadows.glow(color, strength: 0.7) : null,
+    return Semantics(
+      label: '$displayName${seat.isBot ? ', bot' : ''}, ${progress.home} of 4 pawns home${active ? ', playing now' : ''}',
+      child: AnimatedContainer(
+        duration: AppMotion.normal,
+        curve: Curves.easeOut,
+        height: height,
+        padding: const EdgeInsets.all(7),
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.lgAll,
+          gradient: active
+              ? LinearGradient(
+                  begin: mirrored ? Alignment.centerRight : Alignment.centerLeft,
+                  end: mirrored ? Alignment.centerLeft : Alignment.centerRight,
+                  colors: [color.withValues(alpha: 0.5), AppColors.surface],
+                )
+              : null,
+          color: active ? null : AppColors.surface.withValues(alpha: 0.75),
+          border: Border.all(color: active ? color : AppColors.outline, width: active ? 2.5 : 1.5),
+          boxShadow: active ? AppShadows.glow(color, strength: 0.7) : null,
+        ),
+        child: Row(
+          children: mirrored
+              ? [text, const SizedBox(width: AppSpacing.sm), slot]
+              : [slot, const SizedBox(width: AppSpacing.sm), text],
+        ),
       ),
-      child: Row(
-        children: mirrored
-            ? [text, const SizedBox(width: AppSpacing.sm), slot]
-            : [slot, const SizedBox(width: AppSpacing.sm), text],
-      ),
+    );
+  }
+}
+
+///Four pips: filled = home, ring = on the board, faint = still in base
+class _ProgressPips extends StatelessWidget {
+  final PawnProgress progress;
+  final Color color;
+  final bool mirrored;
+  const _ProgressPips({required this.progress, required this.color, required this.mirrored});
+
+  @override
+  Widget build(BuildContext context) {
+    Widget pip(int i) {
+      final home = i < progress.home;
+      final onBoard = !home && i < progress.home + progress.onBoard;
+      return Container(
+        width: 10,
+        height: 10,
+        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: home ? color : (onBoard ? Colors.transparent : AppColors.surfaceSunken),
+          border: Border.all(
+            color: home ? Colors.white : (onBoard ? color : AppColors.outline),
+            width: home ? 1.5 : 2,
+          ),
+        ),
+      );
+    }
+
+    final pips = [for (int i = 0; i < 4; i++) pip(i)];
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ...(mirrored ? pips.reversed : pips),
+        const SizedBox(width: 5),
+        Text('${progress.home}/4', style: AppTypography.caption.copyWith(fontSize: 11.5)),
+      ],
     );
   }
 }
@@ -155,7 +216,7 @@ class TurnStatus extends StatelessWidget {
       duration: AppMotion.normal,
       child: GameCard(
         key: ValueKey('$title|$hint'),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm + 2),
         borderRadius: AppRadius.pill,
         borderColor: color.withValues(alpha: 0.8),
         shadows: null,
@@ -169,13 +230,16 @@ class TurnStatus extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.sm),
             Flexible(
-              child: Text.rich(
-                TextSpan(children: [
-                  TextSpan(text: title.toUpperCase(), style: AppTypography.label.copyWith(color: AppColors.textPrimary, fontSize: 12.5)),
-                  TextSpan(text: '  ·  $hint', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
-                ]),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              //Scale down rather than cut off the instruction on narrow phones
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text.rich(
+                  TextSpan(children: [
+                  TextSpan(text: title.toUpperCase(), style: AppTypography.label.copyWith(color: AppColors.textPrimary, fontSize: 13.5)),
+                  TextSpan(text: '  ·  $hint', style: AppTypography.caption.copyWith(color: AppColors.textSecondary, fontSize: 14)),
+                  ]),
+                  maxLines: 1,
+                ),
               ),
             ),
           ],

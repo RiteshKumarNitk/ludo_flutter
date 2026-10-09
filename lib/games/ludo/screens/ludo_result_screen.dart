@@ -92,6 +92,35 @@ class _LudoResultScreenState extends State<LudoResultScreen> with TickerProvider
       canPop: true,
       child: GameScaffold(
         showBack: false,
+        //Actions stay visible on every screen size
+        bottom: Container(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.md, AppSpacing.gutter, AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: AppColors.backgroundBottom.withValues(alpha: 0.92),
+            border: const Border(top: BorderSide(color: AppColors.outline)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GameButton(label: t.playAgain, icon: Icons.replay_rounded, onPressed: _playAgain),
+              const SizedBox(height: AppSpacing.md),
+              Row(children: [
+                Expanded(
+                  child: GameButton(
+                    label: t.newGame,
+                    variant: GameButtonVariant.secondary,
+                    onPressed: _newGame,
+                    height: 52,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: GameButton(label: t.homeButton, variant: GameButtonVariant.ghost, onPressed: _home, height: 52),
+                ),
+              ]),
+            ],
+          ),
+        ),
         body: Stack(
           children: [
             if (celebrate)
@@ -148,12 +177,6 @@ class _LudoResultScreenState extends State<LudoResultScreen> with TickerProvider
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                GameButton(label: t.playAgain, icon: Icons.replay_rounded, onPressed: _playAgain),
-                const SizedBox(height: AppSpacing.md),
-                GameButton(label: t.newGame, icon: Icons.tune_rounded, variant: GameButtonVariant.secondary, onPressed: _newGame),
-                const SizedBox(height: AppSpacing.md),
-                GameButton(label: t.homeButton, icon: Icons.home_rounded, variant: GameButtonVariant.ghost, onPressed: _home),
               ],
             ),
           ],
@@ -294,7 +317,7 @@ class _WinnerCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(seat.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTypography.title),
-                Text(seat.color.label, style: AppTypography.caption),
+                Text(seat.color.label, style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
               ],
             ),
           ),

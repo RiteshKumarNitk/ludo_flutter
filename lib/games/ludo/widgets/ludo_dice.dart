@@ -163,20 +163,11 @@ class _DicePainter extends CustomPainter {
         ..color = glow ? AppColors.gold : accent,
     );
 
-    if (value < 1) {
-      //Not rolled yet this turn: a soft question mark
-      final tp = TextPainter(
-        text: TextSpan(
-          text: '?',
-          style: TextStyle(fontSize: size.width * 0.52, fontWeight: FontWeight.w900, color: accent.withValues(alpha: faded ? 0.75 : 1)),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, rect.center - Offset(tp.width / 2, tp.height / 2));
-      return;
-    }
-
-    final pip = Paint()..color = value == 6 && glow ? const Color(0xFFD32F2F) : AppColors.textOnLight;
+    //Not rolled yet this turn: faint pips in the player's color
+    final pip = Paint()
+      ..color = value < 1
+          ? accent.withValues(alpha: faded ? 0.3 : 0.45)
+          : (value == 6 && glow ? const Color(0xFFD32F2F) : AppColors.textOnLight);
     final r = size.width * 0.085;
     const layouts = {
       1: [(0.5, 0.5)],
@@ -186,7 +177,7 @@ class _DicePainter extends CustomPainter {
       5: [(0.28, 0.28), (0.72, 0.28), (0.5, 0.5), (0.28, 0.72), (0.72, 0.72)],
       6: [(0.28, 0.25), (0.72, 0.25), (0.28, 0.5), (0.72, 0.5), (0.28, 0.75), (0.72, 0.75)],
     };
-    for (final (x, y) in layouts[value.clamp(1, 6)]!) {
+    for (final (x, y) in layouts[value < 1 ? 5 : value]!) {
       canvas.drawCircle(Offset(size.width * x, size.height * y), value == 1 ? r * 1.5 : r, pip);
     }
   }

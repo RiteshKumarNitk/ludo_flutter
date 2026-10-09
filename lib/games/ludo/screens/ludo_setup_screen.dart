@@ -52,7 +52,10 @@ class _LudoSetupScreenState extends State<LudoSetupScreen> {
 
   bool _isBot(int seat) => _mode == LudoMode.vsComputer && seat > 0 && !_extraHumans.contains(seat);
 
-  int get _botCount => [for (int i = 0; i < _players; i++) if (_isBot(i)) i].length;
+  int get _botCount => [
+        for (int i = 0; i < _players; i++)
+          if (_isBot(i)) i
+      ].length;
 
   String _defaultName(int seat, LudoStrings t) {
     if (_isBot(seat)) return t.botName(_colors[seat]);
@@ -60,7 +63,8 @@ class _LudoSetupScreenState extends State<LudoSetupScreen> {
     return t.playerN(seat + 1);
   }
 
-  String _nameOf(int seat, LudoStrings t) => _isBot(seat) ? _defaultName(seat, t) : (_names[seat] ?? _defaultName(seat, t));
+  String _nameOf(int seat, LudoStrings t) =>
+      _isBot(seat) ? _defaultName(seat, t) : (_names[seat] ?? _defaultName(seat, t));
 
   LudoMatchConfig _buildConfig(LudoStrings t) => LudoMatchConfig(
         mode: _botCount == 0 ? LudoMode.passAndPlay : _mode,
@@ -191,28 +195,33 @@ class _LudoSetupScreenState extends State<LudoSetupScreen> {
             ],
           ),
           SectionLabel(t.modeLabel),
-          Row(
-            children: [
-              Expanded(
-                child: _ModeCard(
-                  selected: _mode == LudoMode.vsComputer,
-                  icon: Icons.smart_toy_rounded,
-                  title: t.vsComputer,
-                  hint: t.vsComputerHint,
-                  onTap: () => setState(() => _mode = LudoMode.vsComputer),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _ModeCard(
+                    selected: _mode == LudoMode.vsComputer,
+                    icon: Icons.smart_toy_rounded,
+                    accent: AppColors.secondary,
+                    title: t.vsComputer,
+                    hint: t.vsComputerHint,
+                    onTap: () => setState(() => _mode = LudoMode.vsComputer),
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _ModeCard(
-                  selected: _mode == LudoMode.passAndPlay,
-                  icon: Icons.groups_rounded,
-                  title: t.passAndPlay,
-                  hint: t.passAndPlayHint,
-                  onTap: () => setState(() => _mode = LudoMode.passAndPlay),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: _ModeCard(
+                    selected: _mode == LudoMode.passAndPlay,
+                    icon: Icons.groups_rounded,
+                    accent: AppColors.playerGreen,
+                    title: t.passAndPlay,
+                    hint: t.passAndPlayHint,
+                    onTap: () => setState(() => _mode = LudoMode.passAndPlay),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           AnimatedSize(
             duration: AppMotion.normal,
@@ -312,11 +321,19 @@ class _ChoiceCard extends StatelessWidget {
 class _ModeCard extends StatelessWidget {
   final bool selected;
   final IconData icon;
+  final Color accent;
   final String title;
   final String hint;
   final VoidCallback onTap;
 
-  const _ModeCard({required this.selected, required this.icon, required this.title, required this.hint, required this.onTap});
+  const _ModeCard({
+    required this.selected,
+    required this.icon,
+    required this.accent,
+    required this.title,
+    required this.hint,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -324,10 +341,22 @@ class _ModeCard extends StatelessWidget {
       selected: selected,
       onTap: onTap,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 34, color: selected ? AppColors.primary : AppColors.textSecondary),
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withValues(alpha: selected ? 0.3 : 0.14),
+              border: Border.all(color: accent.withValues(alpha: selected ? 0.9 : 0.35), width: 2),
+            ),
+            child: Icon(icon, size: 28, color: selected ? AppColors.textPrimary : accent),
+          ),
           const SizedBox(height: AppSpacing.sm),
-          Text(title, textAlign: TextAlign.center, style: AppTypography.label.copyWith(color: AppColors.textPrimary, fontSize: 13)),
+          Text(title,
+              textAlign: TextAlign.center,
+              style: AppTypography.label.copyWith(color: AppColors.textPrimary, fontSize: 13)),
           const SizedBox(height: AppSpacing.xxs),
           Text(hint, textAlign: TextAlign.center, maxLines: 2, style: AppTypography.caption.copyWith(fontSize: 12)),
         ],

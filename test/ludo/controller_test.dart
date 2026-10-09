@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ludo_flutter/core/audio/sound_effects.dart';
 import 'package:ludo_flutter/core/settings/app_settings.dart';
 import 'package:ludo_flutter/games/ludo/controller/ludo_controller.dart';
+import 'package:ludo_flutter/games/ludo/engine/board_geometry.dart';
+import 'package:ludo_flutter/games/ludo/engine/ludo_engine.dart';
 import 'package:ludo_flutter/games/ludo/data/ludo_records.dart';
 import 'package:ludo_flutter/games/ludo/data/ludo_save_store.dart';
 import 'package:ludo_flutter/games/ludo/models/ludo_models.dart';
@@ -84,6 +86,69 @@ void main() {
     expect(red.firstWhere((s) => s >= 0), 6);
     expect(c.state.stats[LudoColor.red]!.sixes, 3);
     c.dispose();
+  });
+
+  ///Step on [color]'s route that lands on the cell of [other]'s [step]
+  int sameCell(LudoColor color, LudoColor other, int step) =>
+      BoardGeometry.routeOf(color).indexOf(BoardGeometry.cellOf(other, step)!);
+
+  test('a human capture returns the pawn to base and gives the same player another roll', () async {
+    final c = controller(random: ScriptedRandom([4]));
+    final config = duel();
+    final s = LudoEngine.start(config.seats).copyWith(steps: {
+      LudoColor.red: const [10, -1, -1, -1],
+      LudoColor.yellow: [sameCell(LudoColor.yellow, LudoColor.red, 14), -1, -1, -1],
+    });
+    c.debugShow(config, s);
+    c.rollDice();
+    await settle(); //single legal move is played automatically
+    expect(c.state.stepsOf(LudoColor.yellow), [-1, -1, -1, -1], reason: 'captured pawn is back in base');
+    expect(c.state.stepsOf(LudoColor.red)[0], 14);
+    expect(c.state.currentColor, LudoColor.red);
+    expect(c.canRoll, isTrue, reason: 'extra turn after the capture');
+    expect(c.state.stats[LudoColor.red]!.captures, 1);
+    c.dispose();
+  });
+
+  test('a bot capture also earns the bot an extra roll before the turn passes', () async {
+    final c = controller(random: ScriptedRandom([4, 1]));
+    const config = botFirst;
+    const yellowStart = 10;
+    final s = LudoEngine.start(config.seats).copyWith(steps: {
+      LudoColor.yellow: [yellowStart, -1, -1, -1],
+      LudoColor.red: [sameCell(LudoColor.red, LudoColor.yellow, yellowStart + 4), -1, -1, -1],
+    });
+    c.debugShow(config, s);
+    await settle(60);
+    expect(c.state.stepsOf(LudoColor.red)[0], -1, reason: 'red pawn captured');
+    expect(c.state.stepsOf(LudoColor.yellow)[0], yellowStart + 5, reason: 'bot rolled 4 (capture) then 1 (extra roll)');
+    expect(c.state.currentColor, LudoColor.red, reason: 'turn passes after the extra roll');
+    expect(c.state.stats[LudoColor.yellow]!.turns, 1, reason: 'still one turn for the bot');
+    c.dispose();
+  });
+
+  test('a capture survives leave and continue with the extra roll still pending', () async {
+    final store = LudoSaveStore();
+    final c = controller(random: ScriptedRandom([4]), store: store);
+    final config = duel();
+    c.debugShow(
+      config,
+      LudoEngine.start(config.seats).copyWith(steps: {
+        LudoColor.red: const [10, -1, -1, -1],
+        LudoColor.yellow: [sameCell(LudoColor.yellow, LudoColor.red, 14), -1, -1, -1],
+      }),
+    );
+    c.rollDice();
+    await settle();
+    await c.leave();
+
+    final again = controller(store: store);
+    expect(await again.loadSaved(), isTrue);
+    expect(again.state.currentColor, LudoColor.red);
+    expect(again.state.phase, LudoPhase.roll);
+    expect(again.canRoll, isTrue);
+    c.dispose();
+    again.dispose();
   });
 
   test('humans cannot act during a bot turn or pick illegal pawns', () async {

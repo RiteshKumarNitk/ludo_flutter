@@ -19,12 +19,16 @@ class BoardPawn {
   final int arrival;
   final bool selectable;
 
+  ///Drawn faded (a pawn of the moving player that cannot move now)
+  final bool dimmed;
+
   const BoardPawn({
     required this.color,
     required this.index,
     required this.step,
     required this.arrival,
     this.selectable = false,
+    this.dimmed = false,
   });
 }
 
@@ -321,7 +325,7 @@ class _AnimatedPawnState extends State<_AnimatedPawn> with SingleTickerProviderS
 
   @override
   Widget build(BuildContext context) {
-    final token = PawnToken(color: widget.color, selectable: widget.pawn.selectable);
+    final token = PawnToken(color: widget.color, selectable: widget.pawn.selectable, dimmed: widget.pawn.dimmed);
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {

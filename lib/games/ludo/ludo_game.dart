@@ -68,8 +68,13 @@ final GameDefinition ludoGame = GameDefinition(
   },
   resetSettings: (context) => context.read<LudoPreferences>().resetTheme(),
   findResumable: (context) async {
+    final theme = context.read<LudoPreferences>().theme;
     final summary = await context.read<LudoController>().savedSummary();
-    return summary == null ? null : ResumableMatch(const LudoStrings().resumeSummary(summary));
+    if (summary == null) return null;
+    return ResumableMatch(
+      const LudoStrings().resumeSummary(summary),
+      markers: [for (final c in summary.colors) theme.colorOf(c)],
+    );
   },
   resume: (context) async {
     final navigator = Navigator.of(context);

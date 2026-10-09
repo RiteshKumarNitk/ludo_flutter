@@ -5,7 +5,10 @@ import 'package:provider/single_child_widget.dart';
 class ResumableMatch {
   ///Short description, e.g. "4 players · vs Computer"
   final String summary;
-  const ResumableMatch(this.summary);
+
+  ///Colors of the seats in the saved match, shown as small markers
+  final List<Color> markers;
+  const ResumableMatch(this.summary, {this.markers = const []});
 }
 
 ///How a game plugs into the app. Deliberately small: it describes the game

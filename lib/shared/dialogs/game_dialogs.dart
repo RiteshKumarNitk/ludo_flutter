@@ -131,7 +131,7 @@ Future<PauseAction> showPauseMenu(BuildContext context) async {
         GameButton(
           label: s.restart.toUpperCase(),
           icon: Icons.refresh_rounded,
-          variant: GameButtonVariant.secondary,
+          variant: GameButtonVariant.ghost,
           onPressed: () => Navigator.of(context).pop(PauseAction.restart),
         ),
         GameButton(

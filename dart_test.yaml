@@ -1,0 +1,3 @@
+tags:
+  screenshots:
+    skip: "Visual review only. Run: flutter test --tags screenshots --run-skipped --update-goldens"

@@ -120,7 +120,7 @@ class _GameButtonState extends State<GameButton> {
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: Center(child: content),
                     ),
                   ),

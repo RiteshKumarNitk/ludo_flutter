@@ -117,7 +117,7 @@ class _StatsTab extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: AppSpacing.md,
           crossAxisSpacing: AppSpacing.md,
-          childAspectRatio: 2.0,
+          childAspectRatio: 1.85,
           children: [
             _Tile(icon: Icons.sports_esports_rounded, label: t.played, value: records.matchesPlayed),
             _Tile(icon: Icons.groups_rounded, label: t.passAndPlayGames, value: records.passAndPlayGames),
@@ -353,7 +353,7 @@ class _Tile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('$value', style: AppTypography.number.copyWith(fontSize: 20)),
-                Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTypography.caption.copyWith(fontSize: 11.5)),
+                Text(label, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTypography.caption.copyWith(fontSize: 11.5, height: 1.15)),
               ],
             ),
           ),

@@ -132,8 +132,8 @@ class _Rule extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 84,
-              height: 64,
+              width: 68,
+              height: 60,
               alignment: Alignment.center,
               decoration: const BoxDecoration(color: AppColors.surfaceSunken, borderRadius: AppRadius.mdAll),
               child: FittedBox(

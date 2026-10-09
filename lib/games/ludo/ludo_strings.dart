@@ -47,7 +47,7 @@ class LudoStrings {
   String get save => 'SAVE';
   String get you => 'You';
   String playerN(int n) => 'Player $n';
-  String botName(LudoColor c) => '${c.label} Bot';
+  String botName(LudoColor c) => c.label;
   String get goesFirst => 'Goes first';
   String get replaceSavedTitle => 'Start a new match?';
   String get replaceSavedBody => 'Your unfinished match will be replaced.';
@@ -61,8 +61,8 @@ class LudoStrings {
   String get leaveGame => 'LEAVE GAME';
   String get yourTurn => 'Your turn';
   String turnOf(String name) => "$name's turn";
-  String get tapDice => 'Tap the dice to roll';
-  String get pickPawn => 'Tap a glowing pawn to move';
+  String get tapDice => 'Tap the dice';
+  String get pickPawn => 'Pick a pawn';
   String get moving => 'Moving…';
   String get rolling => 'Rolling…';
   String thinking(String name) => '$name is thinking…';
@@ -70,7 +70,6 @@ class LudoStrings {
   String get finishedLabel => 'Finished';
   String pawnsHome(int n) => '$n/4 home';
   String get passing => 'Passing the dice…';
-  String get botThinking => 'Thinking…';
 
   String banner(LudoBanner banner, String name) {
     switch (banner.kind) {
@@ -123,7 +122,7 @@ class LudoStrings {
 
   String modeName(LudoMode mode) => mode == LudoMode.vsComputer ? 'vs Computer' : 'Pass & Play';
 
-  String resumeSummary(ResumableSummary s) => '${s.players} players · ${modeName(s.mode)}';
+  String resumeSummary(ResumableSummary s) => modeName(s.mode);
 
   //Settings
   String get boardTheme => 'Board theme';
@@ -142,9 +141,9 @@ class LudoStrings {
   String get played => 'Played';
   String get bestStreak => 'Best streak';
   String get currentStreak => 'Current streak';
-  String get pawnsCaptured => 'Pawns captured';
+  String get pawnsCaptured => 'Captures';
   String get pawnsLost => 'Pawns lost';
-  String get sixesRolled => 'Sixes rolled';
+  String get sixesRolled => 'Sixes';
   String get flawlessWins => 'Flawless wins';
   String get passAndPlayGames => 'Pass & play';
   String get vsComputerStats => 'VS COMPUTER';

@@ -178,6 +178,7 @@ class LudoController extends ChangeNotifier {
     _state = state;
     _matchId = matchId;
     notifyListeners();
+    _advance();
   }
 
   void restart() {
@@ -205,7 +206,7 @@ class LudoController extends ChangeNotifier {
   Future<ResumableSummary?> savedSummary() async {
     final saved = await store.load();
     if (saved == null) return null;
-    return ResumableSummary(saved.config.seats.length, saved.config.mode);
+    return ResumableSummary(saved.config.seats.length, saved.config.mode, [for (final s in saved.config.seats) s.color]);
   }
 
   ///Leave to the menu, keeping the match saved to continue later
@@ -448,5 +449,6 @@ class LudoController extends ChangeNotifier {
 class ResumableSummary {
   final int players;
   final LudoMode mode;
-  const ResumableSummary(this.players, this.mode);
+  final List<LudoColor> colors;
+  const ResumableSummary(this.players, this.mode, this.colors);
 }

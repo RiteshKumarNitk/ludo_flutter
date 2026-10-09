@@ -21,8 +21,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin, RouteAware {
-  late final AnimationController _intro =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..forward();
+  late final AnimationController _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
+    ..forward();
   ResumableMatch? _resumable;
   bool _opening = false;
 
@@ -68,7 +68,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _staggered(int index, Widget child) {
     final start = (index * 0.12).clamp(0.0, 0.6);
-    final animation = CurvedAnimation(parent: _intro, curve: Interval(start, (start + 0.5).clamp(0.0, 1.0), curve: Curves.easeOutCubic));
+    final animation = CurvedAnimation(
+        parent: _intro, curve: Interval(start, (start + 0.5).clamp(0.0, 1.0), curve: Curves.easeOutCubic));
     return FadeTransition(
       opacity: animation,
       child: SlideTransition(
@@ -98,7 +99,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(s.homeEyebrow, style: AppTypography.label),
-                      Text(s.homeGreeting, style: AppTypography.title),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(s.homeGreeting, maxLines: 1, style: AppTypography.title),
+                      ),
                     ],
                   ),
                 ),
@@ -127,13 +132,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SectionLabel(s.moreGames),
-                Row(
-                  children: [
-                    for (final upcoming in GameCatalog.comingSoon) ...[
-                      if (upcoming != GameCatalog.comingSoon.first) const SizedBox(width: AppSpacing.md),
-                      Expanded(child: _ComingSoonCard(game: upcoming)),
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final upcoming in GameCatalog.comingSoon) ...[
+                        if (upcoming != GameCatalog.comingSoon.first) const SizedBox(width: AppSpacing.md),
+                        Expanded(child: _ComingSoonCard(game: upcoming)),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -177,7 +185,8 @@ class _Logo extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         children: [
-          for (final c in colors) DecoratedBox(decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(5))),
+          for (final c in colors)
+            DecoratedBox(decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(5))),
         ],
       ),
     );
@@ -211,34 +220,35 @@ class _FeaturedCard extends StatelessWidget {
           LayoutBuilder(builder: (context, constraints) {
             final art = (constraints.maxWidth * 0.46).clamp(120.0, 190.0);
             return SizedBox(
-            height: art + AppSpacing.xl,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  left: AppSpacing.lg,
-                  top: AppSpacing.xl,
-                  right: art + AppSpacing.sm,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const TagPill('FEATURED', color: AppColors.primary, textColor: AppColors.onPrimary),
-                      const SizedBox(height: AppSpacing.sm),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(game.title.toUpperCase(), style: AppTypography.display.copyWith(fontSize: 44, letterSpacing: 4)),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(game.tagline, style: AppTypography.body),
-                    ],
+              height: art + AppSpacing.xl,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: AppSpacing.lg,
+                    top: AppSpacing.xl,
+                    right: art + AppSpacing.sm,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const TagPill('FEATURED', color: AppColors.primary, textColor: AppColors.onPrimary),
+                        const SizedBox(height: AppSpacing.sm),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(game.title.toUpperCase(),
+                              style: AppTypography.display.copyWith(fontSize: 44, letterSpacing: 4)),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(game.tagline, style: AppTypography.body),
+                      ],
+                    ),
                   ),
-                ),
-                if (game.artwork != null)
-                  Positioned(right: AppSpacing.sm, top: AppSpacing.lg, child: game.artwork!(context, art)),
-              ],
-            ),
-          );
+                  if (game.artwork != null)
+                    Positioned(right: AppSpacing.sm, top: AppSpacing.lg, child: game.artwork!(context, art)),
+                ],
+              ),
+            );
           }),
           Padding(
             padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
@@ -249,10 +259,11 @@ class _FeaturedCard extends StatelessWidget {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        GameButton(label: s.continueMatch, icon: Icons.play_arrow_rounded, onPressed: onContinue, height: 64),
+                        GameButton(
+                            label: s.continueMatch, icon: Icons.play_arrow_rounded, onPressed: onContinue, height: 64),
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                          child: Text(resumable!.summary, textAlign: TextAlign.center, style: AppTypography.caption),
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                          child: Center(child: _SavedMatchChip(match: resumable!)),
                         ),
                         GameButton(
                           label: s.newMatch.toUpperCase(),
@@ -272,7 +283,8 @@ class _FeaturedCard extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: () => Navigator.of(context).pushNamed(game.howToPlayRoute!),
                   icon: const Icon(Icons.menu_book_rounded, size: 18, color: AppColors.textSecondary),
-                  label: Text(s.howToPlay, style: AppTypography.subtitle.copyWith(fontSize: 14, color: AppColors.textSecondary)),
+                  label: Text(s.howToPlay,
+                      style: AppTypography.subtitle.copyWith(fontSize: 14, color: AppColors.textSecondary)),
                 ),
               ),
             ),
@@ -311,8 +323,50 @@ class _ComingSoonCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: AppTypography.subtitle.copyWith(fontSize: 13, color: AppColors.textSecondary),
           ),
+          const Spacer(),
           const SizedBox(height: AppSpacing.sm),
           FittedBox(child: TagPill(s.comingSoon)),
+        ],
+      ),
+    );
+  }
+}
+
+///Compact description of the saved match: its seat colors and summary
+class _SavedMatchChip extends StatelessWidget {
+  final ResumableMatch match;
+  const _SavedMatchChip({required this.match});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSunken.withValues(alpha: 0.6),
+        borderRadius: AppRadius.pill,
+        border: Border.all(color: AppColors.outline),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.bookmark_rounded, size: 16, color: AppColors.primary),
+          const SizedBox(width: AppSpacing.xs),
+          for (final c in match.markers)
+            Container(
+              width: 10,
+              height: 10,
+              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+              decoration: BoxDecoration(color: c, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.2)),
+            ),
+          const SizedBox(width: AppSpacing.sm),
+          Flexible(
+            child: Text(
+              match.summary,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+            ),
+          ),
         ],
       ),
     );

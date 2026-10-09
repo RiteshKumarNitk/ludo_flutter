@@ -76,7 +76,7 @@ class SegmentedChoice<T> extends StatelessWidget {
                         child: Center(
                           child: AnimatedDefaultTextStyle(
                             duration: AppMotion.fast,
-                            style: AppTypography.subtitle.copyWith(
+                            style: DefaultTextStyle.of(context).style.merge(AppTypography.subtitle).copyWith(
                               fontWeight: FontWeight.w900,
                               color: option.value == selected ? AppColors.onPrimary : AppColors.textSecondary,
                             ),

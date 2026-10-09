@@ -241,6 +241,78 @@ void main() {
     });
   });
 
+  group('Extra turn on capture', () {
+    ///Red pawn at 10, a yellow pawn 4 cells ahead (red step 14, not safe)
+    LudoState captureSetup({int redStep = 10, int dice = 4, int sixStreak = 0}) => board([red, yellow], steps: {
+          red: [redStep, -1, -1, -1],
+          yellow: [sameCell(yellow, red, redStep + dice), 20, -1, -1],
+        }, sixStreak: sixStreak);
+
+    test('a capture without a 6 grants exactly one extra roll', () {
+      final step = LudoEngine.move(LudoEngine.roll(captureSetup(), 4).state, 0);
+      expect(step.state.phase, LudoPhase.roll);
+      expect(step.state.currentColor, red);
+      expect(step.events.whereType<ExtraRollGranted>(), hasLength(1));
+
+      //The extra roll is an ordinary roll: a plain move then ends the turn
+      final after = LudoEngine.move(LudoEngine.roll(step.state, 2).state, 0).state;
+      expect(after.phase, LudoPhase.turnOver);
+      expect(LudoEngine.endTurn(after).state.currentColor, yellow);
+    });
+
+    test('the captured pawn goes back to its own base and nothing else moves', () {
+      final s = captureSetup();
+      final step = LudoEngine.move(LudoEngine.roll(s, 4).state, 0);
+      expect(step.state.stepsOf(yellow), [-1, 20, -1, -1]);
+      expect(step.state.arrivals[yellow]![0], 0);
+      expect(step.state.stepsOf(red), [14, -1, -1, -1]);
+      final captured = step.events.whereType<PawnCaptured>().single;
+      expect(captured.victim, (color: yellow, index: 0));
+      expect(captured.victimStep, sameCell(yellow, red, 14));
+    });
+
+    test('a 6 that also captures grants one extra roll, not two', () {
+      final s = captureSetup(redStep: 8, dice: 6);
+      final step = LudoEngine.move(LudoEngine.roll(s, 6).state, 0);
+      expect(step.events.whereType<ExtraRollGranted>(), hasLength(1));
+      expect(step.events.whereType<ExtraRollGranted>().single.reason, ExtraRollReason.capture);
+      expect(step.state.phase, LudoPhase.roll);
+      expect(step.state.sixStreak, 1, reason: 'the 6 still counts toward three sixes');
+
+      final next = LudoEngine.move(LudoEngine.roll(step.state, 3).state, 0).state;
+      expect(next.phase, LudoPhase.turnOver, reason: 'no leftover extra turn');
+    });
+
+    test('three sixes still cancel the third six even after a capture', () {
+      var s = captureSetup(redStep: 8, dice: 6, sixStreak: 1); //one 6 already rolled this turn
+      s = LudoEngine.move(LudoEngine.roll(s, 6).state, 0).state; //second 6 captures
+      expect(s.phase, LudoPhase.roll);
+      expect(s.sixStreak, 2);
+      final third = LudoEngine.roll(s, 6);
+      expect(third.events.whereType<ThreeSixesForfeited>(), hasLength(1));
+      expect(third.state.phase, LudoPhase.turnOver);
+      expect(third.state.stepsOf(red)[0], 14, reason: 'the capturing move stays');
+    });
+
+    test('a move onto a safe cell with an opponent grants no extra roll', () {
+      final star = sameCell(yellow, red, 8);
+      final s = board([red, yellow], steps: {
+        red: [4, -1, -1, -1],
+        yellow: [star, -1, -1, -1],
+      });
+      final step = LudoEngine.move(LudoEngine.roll(s, 4).state, 0);
+      expect(step.events.whereType<ExtraRollGranted>(), isEmpty);
+      expect(step.state.phase, LudoPhase.turnOver);
+    });
+
+    test('after a capture, an extra roll with no legal move passes the turn', () {
+      final s = LudoEngine.move(LudoEngine.roll(captureSetup(), 4).state, 0).state;
+      expect(s.phase, LudoPhase.roll);
+      final stuck = LudoEngine.roll(s.copyWith(steps: {red: const [53, 56, 56, 56], yellow: s.stepsOf(yellow)}), 5);
+      expect(stuck.state.phase, LudoPhase.turnOver);
+    });
+  });
+
   group('Winning', () {
     test('two players: the first to bring all four pawns home wins', () {
       final s = board([red, yellow], steps: {

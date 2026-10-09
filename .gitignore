@@ -52,3 +52,6 @@ app.*.map.json
 
 # Gradle output under android/
 /android/build/
+
+# Screenshot review output (test/_shots)
+/test/_shots/out/

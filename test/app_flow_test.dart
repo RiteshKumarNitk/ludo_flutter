@@ -97,7 +97,7 @@ void main() {
         await tapText(tester, 'LEAVE GAME');
         await frames(tester);
         expect(find.text('CONTINUE'), findsOneWidget, reason: 'saved match offered on home');
-        expect(find.text('4 players · vs Computer'), findsOneWidget);
+        expect(find.text('vs Computer'), findsOneWidget);
         await tester.pumpWidget(const SizedBox());
         await frames(tester, 2000);
       });
