@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../core/navigation/app_routes.dart';
@@ -79,11 +80,47 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
+  Future<bool?> _showExitConfirmation(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.xlAll),
+          title: Text('Exit Khelora?', style: AppTypography.title),
+          content: Text('Are you sure you want to exit the game?', style: AppTypography.body),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Exit', style: AppTypography.button.copyWith(color: AppColors.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+              ),
+              child: Text('Stay', style: AppTypography.button.copyWith(color: AppColors.primary)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = AppStrings.of(context);
     final game = _featured;
-    return GameScaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldExit = await _showExitConfirmation(context);
+        if (shouldExit == true) {
+          SystemNavigator.pop();
+        }
+      },
+      child: GameScaffold(
       showBack: false,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.md, AppSpacing.gutter, AppSpacing.xl),
@@ -159,6 +196,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
         ],
       ),
+    ),
     );
   }
 }
