@@ -1,8 +1,6 @@
-# NLudo Flutter
+# Ludo
 
-Ludo game made with Flutter — play with 2–4 players on one device, against friends or the computer.
-
-[Play now!](https://nizwar.github.io/ludo_flutter/)
+Offline Ludo for Android and iOS by **Innovatex Technology Pvt. Ltd.** — play with 2–4 players on one device, against friends or the computer.
 
 ## How to play
 
@@ -48,8 +46,7 @@ The engine has no Flutter, timer, storage or audio dependencies, so a future
 online mode can run the same rules elsewhere. Adding a game means adding a
 `games/<name>/` folder and one catalog entry.
 
-Sound effects other than the dice and step sounds are synthesized by
-`dart run tool/generate_sounds.dart`.
+All sound effects are synthesized by `dart run tool/generate_sounds.dart`.
 
 ## Development
 
@@ -68,20 +65,14 @@ GitHub Pages — in the repo settings, set **Settings → Pages → Source** to
 * Online multiplayer
 * More games: Snakes & Ladders, Chess, Carrom
 
-## LICENSE
-```license
-Copyright 2022 - Mochamad Nizwar Syafuan
+## Developer
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Innovatex Technology Pvt. Ltd., Jaipur, Rajasthan, India  
+https://innovatex-technology.com · info@innovatex-technology.com
 
-    http://www.apache.org/licenses/LICENSE-2.0
+## License
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Copyright © 2026 Innovatex Technology Pvt. Ltd. All rights reserved.
 
-```
+Third-party packages keep their own licenses; the app lists them under
+*About → Open-source licenses*.

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.nizwar.ludo_flutter"
+    namespace = "com.innovatextechnology.ludo"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "dev.nizwar.ludo_flutter"
+        applicationId = "com.innovatextechnology.ludo"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "dev.nizwar" "\0"
+            VALUE "CompanyName", "Innovatex Technology Pvt. Ltd." "\0"
             VALUE "FileDescription", "ludo_flutter" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "ludo_flutter" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 dev.nizwar. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Innovatex Technology Pvt. Ltd. All rights reserved." "\0"
             VALUE "OriginalFilename", "ludo_flutter.exe" "\0"
             VALUE "ProductName", "ludo_flutter" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

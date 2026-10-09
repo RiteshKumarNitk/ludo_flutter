@@ -4,8 +4,8 @@ import 'package:just_audio/just_audio.dart';
 ///Every sound the app can play
 enum Sfx {
   tap('assets/sounds/tap.wav'),
-  diceRoll('assets/sounds/roll_the_dice.mp3'),
-  step('assets/sounds/move.wav'),
+  diceRoll('assets/sounds/dice.wav'),
+  step('assets/sounds/step.wav'),
   capture('assets/sounds/capture.wav'),
   home('assets/sounds/home.wav'),
   win('assets/sounds/win.wav');

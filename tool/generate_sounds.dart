@@ -10,6 +10,8 @@ const int sampleRate = 22050;
 
 void main() {
   _write('assets/sounds/tap.wav', _tap());
+  _write('assets/sounds/dice.wav', _dice());
+  _write('assets/sounds/step.wav', _step());
   _write('assets/sounds/capture.wav', _capture());
   _write('assets/sounds/home.wav', _home());
   _write('assets/sounds/win.wav', _win());
@@ -32,6 +34,34 @@ void _tone(List<double> out, double start, double length, double freq,
     }
     out[from + i] += gain * env * v;
   }
+}
+
+///A dice rattling and settling: clicks that thin out over ~0.55 s
+List<double> _dice() {
+  final out = _buffer(0.6);
+  final rnd = Random(11);
+  double t = 0;
+  int hit = 0;
+  while (t < 0.5) {
+    final from = (t * sampleRate).round();
+    final pitch = 900 + rnd.nextDouble() * 1400;
+    final gain = 0.5 * (1 - t * 1.4).clamp(0.25, 1.0);
+    for (int i = 0; i < (0.025 * sampleRate).round() && from + i < out.length; i++) {
+      final s = i / sampleRate;
+      final env = exp(-140 * s);
+      out[from + i] += gain * env * (0.6 * sin(2 * pi * pitch * s) + 0.4 * (rnd.nextDouble() * 2 - 1));
+    }
+    hit++;
+    t += 0.03 + hit * 0.006 + rnd.nextDouble() * 0.02;
+  }
+  return out;
+}
+
+///A soft wooden tok for each step a pawn takes
+List<double> _step() {
+  final out = _buffer(0.09);
+  _tone(out, 0, 0.09, 520, gain: 0.45, decay: 55, harmonics: const [(1, 1), (2.7, 0.25)]);
+  return out;
 }
 
 List<double> _tap() {

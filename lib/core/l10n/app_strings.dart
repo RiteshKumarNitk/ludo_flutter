@@ -42,9 +42,19 @@ class AppStrings {
   String get resetSettings => 'Reset settings';
   String get resetSettingsTitle => 'Reset settings?';
   String get resetSettingsBody => 'Sound, vibration, game speed and board theme go back to their defaults.';
-  String get aboutBody =>
-      'A polished offline board game collection. No accounts, no ads, no data collection — just play.';
-  String get aboutCredit => 'Ludo is based on NLudo by Mochamad Nizwar Syafuan, licensed under Apache 2.0.';
+  String get aboutBody => 'Classic board games to play offline with friends or against the computer.';
+  String get developedBy => 'DEVELOPED BY';
+  String get companyName => 'Innovatex Technology Pvt. Ltd.';
+  String get companyWebsite => 'innovatex-technology.com';
+  String get companyEmail => 'info@innovatex-technology.com';
+  String get companyPhone => '+91-9664361738';
+  String get companyAddress => 'Jaipur, Rajasthan, India';
+  String get privacyTitle => 'Your privacy';
+  String get privacyBody =>
+      'This game works fully offline. It does not collect, store or share any personal data. '
+      'Your game progress, settings and records stay on this device.';
+  String get openSourceLicenses => 'OPEN-SOURCE LICENSES';
+  String legalese(int year) => '© $year Innovatex Technology Pvt. Ltd.';
   String version(String v) => 'Version $v';
 
   //Pause

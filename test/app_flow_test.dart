@@ -208,6 +208,15 @@ void main() {
         await tester.binding.handlePopRoute();
         await frames(tester);
 
+        await tapText(tester, 'About');
+        expect(find.text('Innovatex Technology Pvt. Ltd.'), findsOneWidget);
+        expect(find.textContaining('does not collect'), findsOneWidget);
+        await tapText(tester, 'OPEN-SOURCE LICENSES');
+        expect(find.byType(LicensePage), findsOneWidget);
+        await tester.binding.handlePopRoute();
+        await frames(tester);
+        await tapText(tester, 'CLOSE');
+
         await tapText(tester, 'How to play');
         await reveal(tester, '8 safe cells');
         expect(find.text('8 safe cells'), findsOneWidget);
