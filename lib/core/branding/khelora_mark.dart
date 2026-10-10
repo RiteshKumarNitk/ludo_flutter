@@ -134,8 +134,10 @@ class KheloraWordmark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = TextStyle(
+      fontFamily: 'Baloo2',
       fontSize: fontSize,
-      fontWeight: FontWeight.w900,
+      fontWeight: FontWeight.w800,
+      fontVariations: const [FontVariation('wght', 800)],
       letterSpacing: fontSize * 0.04,
       height: 1.0,
       color: Colors.white,

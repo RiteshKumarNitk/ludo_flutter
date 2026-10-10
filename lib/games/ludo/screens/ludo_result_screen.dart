@@ -426,7 +426,7 @@ class _StandingRow extends StatelessWidget {
               children: [
                 Row(children: [
                   Flexible(child: Text(seat.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTypography.subtitle)),
-                  if (seat.isBot) ...[const SizedBox(width: AppSpacing.xs), TagPill(strings.bot.toUpperCase())],
+                  if (seat.isBot) ...[const SizedBox(width: AppSpacing.xs), TagPill(strings.bot)],
                 ]),
                 const SizedBox(height: 2),
                 Wrap(spacing: AppSpacing.md, children: [

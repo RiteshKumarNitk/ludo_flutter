@@ -77,7 +77,7 @@ class _LudoGameScreenState extends State<LudoGameScreen> with WidgetsBindingObse
           final ok = await showConfirmDialog(context,
               title: s.restartTitle,
               message: s.restartBody,
-              confirmLabel: s.restart.toUpperCase(),
+              confirmLabel: s.restart,
               icon: Icons.refresh_rounded,
               destructive: true);
           if (!ok || !mounted) continue;
@@ -88,7 +88,7 @@ class _LudoGameScreenState extends State<LudoGameScreen> with WidgetsBindingObse
           final ok = await showConfirmDialog(context,
               title: s.quitTitle,
               message: s.quitBody,
-              confirmLabel: s.quit.toUpperCase(),
+              confirmLabel: s.quit,
               icon: Icons.logout_rounded,
               destructive: true);
           if (!ok || !mounted) continue;
@@ -152,7 +152,7 @@ class _LudoGameScreenState extends State<LudoGameScreen> with WidgetsBindingObse
                     return Column(
                       children: [
                         _TopBar(
-                          title: t.title.toUpperCase(),
+                          title: t.title,
                           subtitle: t.modeName(c.config.mode),
                           onPause: _openPauseMenu,
                           pauseTooltip: t.pause,

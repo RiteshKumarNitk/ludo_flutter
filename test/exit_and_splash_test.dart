@@ -67,10 +67,10 @@ void main() {
     expect(find.text('Exit Khelora?'), findsOneWidget);
     expect(find.text('Are you sure you want to exit the game?'), findsOneWidget);
 
-    await tester.tap(find.text('STAY'));
+    await tester.tap(find.text('Stay'));
     await frames(tester, 600);
     expect(find.text('Exit Khelora?'), findsNothing);
-    expect(find.text('PLAY'), findsOneWidget);
+    expect(find.text('Play'), findsOneWidget);
     expect(calls, isNot(contains('SystemNavigator.pop')));
     await finish(tester);
   });
@@ -104,13 +104,13 @@ void main() {
     await frames(tester);
     nav.pop();
     await frames(tester);
-    expect(find.text('CONTINUE'), findsOneWidget);
+    expect(find.text('Continue'), findsOneWidget);
 
     //The visible Exit button opens the same confirmation
     await tester.scrollUntilVisible(find.text('Exit'), 200, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.text('Exit'));
     await frames(tester, 600);
-    await tester.tap(find.text('EXIT'));
+    await tester.tap(find.text('Exit').last);
     await frames(tester, 600);
     expect(calls, contains('SystemNavigator.pop'));
     expect(await controller.savedSummary(), isNotNull, reason: 'exiting never deletes the saved match');
@@ -126,7 +126,7 @@ void main() {
       await tester.binding.handlePopRoute();
       await frames(tester);
       expect(find.text('Exit Khelora?'), findsNothing, reason: route);
-      expect(find.text('PLAY'), findsOneWidget, reason: 'back on Home from $route');
+      expect(find.text('Play'), findsOneWidget, reason: 'back on Home from $route');
     }
 
     //The game keeps its own leave confirmation

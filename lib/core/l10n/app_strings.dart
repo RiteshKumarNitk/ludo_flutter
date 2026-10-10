@@ -19,13 +19,13 @@ class AppStrings {
   String get appName => 'Khelora';
   String get tagline => 'Play Your Way.';
   String get homeGreeting => 'Ready to play?';
-  String get homeEyebrow => 'GAME ROOM';
-  String get play => 'PLAY';
-  String get continueMatch => 'CONTINUE';
+  String get homeEyebrow => 'Game room';
+  String get play => 'Play';
+  String get continueMatch => 'Continue';
   String get newMatch => 'New match';
   String get howToPlay => 'How to play';
-  String get moreGames => 'MORE GAMES';
-  String get comingSoon => 'COMING SOON';
+  String get moreGames => 'More games on the way';
+  String get comingSoon => 'Coming soon';
   String comingSoonMessage(String game) => '$game is coming soon!';
   String get records => 'Records';
   String get settings => 'Settings';
@@ -33,12 +33,12 @@ class AppStrings {
   String get exit => 'Exit';
   String get exitTitle => 'Exit Khelora?';
   String get exitBody => 'Are you sure you want to exit the game?';
-  String get stay => 'STAY';
-  String get exitButton => 'EXIT';
-  String get featuredGame => 'FEATURED GAME';
+  String get stay => 'Stay';
+  String get exitButton => 'Exit';
+  String get featuredGame => 'Featured game';
 
   //Settings
-  String get general => 'GENERAL';
+  String get general => 'General';
   String get sound => 'Sound';
   String get soundHint => 'Dice, moves, captures and wins';
   String get vibration => 'Vibration';
@@ -50,7 +50,7 @@ class AppStrings {
   String get resetSettingsTitle => 'Reset settings?';
   String get resetSettingsBody => 'Sound, vibration, game speed and board theme go back to their defaults.';
   String get aboutBody => 'Classic board games to play offline with friends or against the computer.';
-  String get developedBy => 'DEVELOPED BY';
+  String get developedBy => 'Developed by';
   String get companyName => 'Innovatex Technology Pvt. Ltd.';
   String get companyWebsite => 'innovatex-technology.com';
   String get companyEmail => 'info@innovatex-technology.com';
@@ -60,13 +60,13 @@ class AppStrings {
   String get privacyBody =>
       'This game works fully offline. It does not collect, store or share any personal data. '
       'Your game progress, settings and records stay on this device.';
-  String get openSourceLicenses => 'OPEN-SOURCE LICENSES';
+  String get openSourceLicenses => 'Open-source licenses';
   String legalese(int year) => '© $year Innovatex Technology Pvt. Ltd.';
   String version(String v) => 'Version $v';
 
   //Pause
-  String get paused => 'PAUSED';
-  String get resume => 'RESUME';
+  String get paused => 'Paused';
+  String get resume => 'Resume';
   String get restart => 'Restart';
   String get quit => 'Quit';
   String get restartTitle => 'Restart match?';
@@ -75,10 +75,10 @@ class AppStrings {
   String get quitBody => 'This match will end and its progress will be lost.';
 
   //Common
-  String get cancel => 'CANCEL';
-  String get confirm => 'CONFIRM';
-  String get reset => 'RESET';
-  String get close => 'CLOSE';
+  String get cancel => 'Cancel';
+  String get confirm => 'Confirm';
+  String get reset => 'Reset';
+  String get close => 'Close';
   String get back => 'Back';
   String get on => 'On';
   String get off => 'Off';

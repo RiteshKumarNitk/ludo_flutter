@@ -1,72 +1,102 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 
 import 'app_colors.dart';
 
-///Type scale. Heavy, rounded-feeling weights for a playful game voice.
+///Type scale. Baloo 2 for titles, names, numbers and buttons; Hind for body
+///text, labels and settings. Sentence case everywhere.
+///
+///Baloo 2 ships as a variable font, so each Baloo style also sets the 'wght'
+///axis. Use [weight] to change the weight of an existing Baloo style.
 class AppTypography {
   const AppTypography._();
 
+  static const String displayFamily = 'Baloo2';
+  static const String textFamily = 'Hind';
+
+  static const _w700 = [FontVariation('wght', 700)];
+  static const _w800 = [FontVariation('wght', 800)];
+
+  ///Same style at another weight (keeps Baloo's variable axis in sync)
+  static TextStyle weight(TextStyle style, FontWeight weight) => style.copyWith(
+        fontWeight: weight,
+        fontVariations: style.fontFamily == displayFamily ? [FontVariation('wght', weight.value.toDouble())] : null,
+      );
+
   static const TextStyle display = TextStyle(
-    fontSize: 40,
-    fontWeight: FontWeight.w900,
-    letterSpacing: 2,
-    height: 1.05,
+    fontFamily: displayFamily,
+    fontSize: 44,
+    fontWeight: FontWeight.w800,
+    fontVariations: _w800,
+    height: 1.0,
+    letterSpacing: -0.5,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle headline = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w900,
-    letterSpacing: 0.5,
-    height: 1.1,
+    fontFamily: displayFamily,
+    fontSize: 30,
+    fontWeight: FontWeight.w800,
+    fontVariations: _w800,
+    height: 1.05,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle title = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w800,
-    height: 1.2,
+    fontFamily: displayFamily,
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    fontVariations: _w700,
+    height: 1.1,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle subtitle = TextStyle(
-    fontSize: 16,
+    fontFamily: displayFamily,
+    fontSize: 17,
     fontWeight: FontWeight.w700,
-    height: 1.25,
+    fontVariations: _w700,
+    height: 1.2,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle body = TextStyle(
+    fontFamily: textFamily,
     fontSize: 15,
-    fontWeight: FontWeight.w500,
-    height: 1.4,
+    fontWeight: FontWeight.w400,
+    height: 1.35,
     color: AppColors.textSecondary,
   );
 
   static const TextStyle caption = TextStyle(
-    fontSize: 13,
-    fontWeight: FontWeight.w600,
+    fontFamily: textFamily,
+    fontSize: 13.5,
+    fontWeight: FontWeight.w500,
     height: 1.3,
     color: AppColors.textMuted,
   );
 
-  ///Small uppercase section/eyebrow labels
+  ///Section labels above groups of controls (sentence case, no caps)
   static const TextStyle label = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w900,
-    letterSpacing: 1.6,
-    color: AppColors.textMuted,
+    fontFamily: textFamily,
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+    height: 1.3,
+    color: AppColors.textSecondary,
   );
 
   static const TextStyle button = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w900,
-    letterSpacing: 1.2,
+    fontFamily: displayFamily,
+    fontSize: 19,
+    fontWeight: FontWeight.w800,
+    fontVariations: _w800,
+    height: 1.0,
   );
 
   static const TextStyle number = TextStyle(
-    fontSize: 26,
-    fontWeight: FontWeight.w900,
+    fontFamily: displayFamily,
+    fontSize: 28,
+    fontWeight: FontWeight.w800,
+    fontVariations: _w800,
     height: 1.0,
     color: AppColors.textPrimary,
     fontFeatures: [FontFeature.tabularFigures()],

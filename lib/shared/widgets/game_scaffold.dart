@@ -1,19 +1,17 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 import 'round_icon_button.dart';
 
-///Gradient game-table background with a faint dotted pattern
+///Flat indigo game-table background with a faint dot grid
 class GameBackground extends StatelessWidget {
   final Widget child;
   const GameBackground({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(gradient: AppColors.background),
+    return ColoredBox(
+      color: AppColors.background,
       child: CustomPaint(painter: const _DotsPainter(), child: child),
     );
   }
@@ -24,21 +22,13 @@ class _DotsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withValues(alpha: 0.035);
-    const gap = 26.0;
+    final paint = Paint()..color = AppColors.backgroundDot;
+    const gap = AppSizes.dotSpacing;
     for (double y = gap / 2; y < size.height; y += gap) {
-      final offset = (y / gap).floor().isEven ? 0.0 : gap / 2;
-      for (double x = offset; x < size.width; x += gap) {
-        canvas.drawCircle(Offset(x, y), 1.4, paint);
+      for (double x = gap / 2; x < size.width; x += gap) {
+        canvas.drawCircle(Offset(x, y), AppSizes.dotRadius, paint);
       }
     }
-    //Soft glow behind the top of the screen
-    final glow = Paint()
-      ..shader = RadialGradient(colors: [
-        AppColors.secondary.withValues(alpha: 0.22),
-        Colors.transparent,
-      ]).createShader(Rect.fromCircle(center: Offset(size.width * 0.5, 0), radius: math.max(size.width, 300)));
-    canvas.drawRect(Offset.zero & size, glow);
   }
 
   @override

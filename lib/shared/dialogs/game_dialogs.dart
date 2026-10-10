@@ -136,19 +136,19 @@ Future<PauseAction> showPauseMenu(BuildContext context) async {
           onPressed: () => Navigator.of(context).pop(PauseAction.resume),
         ),
         GameButton(
-          label: s.restart.toUpperCase(),
+          label: s.restart,
           icon: Icons.refresh_rounded,
           variant: GameButtonVariant.ghost,
           onPressed: () => Navigator.of(context).pop(PauseAction.restart),
         ),
         GameButton(
-          label: s.settings.toUpperCase(),
+          label: s.settings,
           icon: Icons.tune_rounded,
           variant: GameButtonVariant.ghost,
           onPressed: () => Navigator.of(context).pop(PauseAction.settings),
         ),
         GameButton(
-          label: s.quit.toUpperCase(),
+          label: s.quit,
           icon: Icons.logout_rounded,
           variant: GameButtonVariant.danger,
           onPressed: () => Navigator.of(context).pop(PauseAction.quit),

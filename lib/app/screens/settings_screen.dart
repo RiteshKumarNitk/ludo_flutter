@@ -93,7 +93,7 @@ class SettingsScreen extends StatelessWidget {
             if (game.settingsSection != null) game.settingsSection!(context),
           const SizedBox(height: AppSpacing.xl),
           GameButton(
-            label: s.resetSettings.toUpperCase(),
+            label: s.resetSettings,
             icon: Icons.restart_alt_rounded,
             variant: GameButtonVariant.ghost,
             onPressed: () => _confirmReset(context),

@@ -36,6 +36,14 @@ Future<void> loadFonts() async {
     roboto.addFont(read(f));
   }
   await roboto.load();
+  //The app's bundled brand fonts
+  ByteData asset(String path) => ByteData.view(File(path).readAsBytesSync().buffer);
+  await (FontLoader('Baloo2')..addFont(Future.value(asset('assets/fonts/Baloo2-Variable.ttf')))).load();
+  final hind = FontLoader('Hind');
+  for (final w in ['Regular', 'Medium', 'SemiBold']) {
+    hind.addFont(Future.value(asset('assets/fonts/Hind-$w.ttf')));
+  }
+  await hind.load();
   await (FontLoader('MaterialIcons')..addFont(read('materialicons-regular.otf'))).load();
 }
 

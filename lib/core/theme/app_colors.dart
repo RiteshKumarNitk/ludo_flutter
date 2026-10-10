@@ -1,52 +1,76 @@
 import 'package:flutter/material.dart';
 
-///The app palette. Screens use these tokens instead of literal colors.
+///The "Jaipur courtyard" palette. Screens use these tokens instead of
+///literal colors.
 class AppColors {
   const AppColors._();
 
-  //Backgrounds and surfaces (Khelora deep navy, brand base #11182B)
-  static const Color backgroundTop = Color(0xFF1B2646);
-  static const Color backgroundBottom = Color(0xFF0B1020);
-  static const Color surface = Color(0xFF1A2341);
-  static const Color surfaceRaised = Color(0xFF253155);
-  static const Color surfaceSunken = Color(0xFF0E1427);
-  static const Color outline = Color(0xFF314070);
-  static const Color scrim = Color(0xCC060A16);
+  //Brand
+  static const Color indigo = Color(0xFF1B2153);
+  static const Color sandstone = Color(0xFFF6D9CB);
+  static const Color gold = Color(0xFFF5B700);
 
-  //Text
+  ///Solid "pressed edge" under gold buttons
+  static const Color goldEdge = Color(0xFFB98900);
+  static const Color boardWhite = Color(0xFFFFFDF9);
+  static const Color cardDivider = Color(0xFFEEDCD2);
+
+  //App background: flat indigo with a faint dot grid (no gradient washes)
+  static const Color background = indigo;
+  static const Color backgroundTop = indigo;
+  static const Color backgroundBottom = indigo;
+  static const Color backgroundDot = Color(0x11FFFFFF); //white at ~6.5%
+
+  //Surfaces on indigo
+  static const Color surface = Color(0xFF262D66); //≈ white 8% over indigo
+  static const Color surfaceRaised = Color(0xFF323A7A);
+  static const Color surfaceSunken = Color(0xFF141A45);
+  static const Color outline = Color(0xFF4F5590); //≈ white 25% over indigo
+  static const Color scrim = Color(0xCC0E1236);
+
+  //Light cards on indigo
+  static const Color card = boardWhite;
+  static const Color onCard = indigo;
+  static const Color onCardMuted = Color(0xFF4A4F75);
+
+  //Text on indigo
   static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFC5CDE8);
-  static const Color textMuted = Color(0xFF8691B5);
-  static const Color textOnLight = Color(0xFF11182B);
+  static const Color textSecondary = Color(0xFFC9CDF0);
+  static const Color textMuted = Color(0xFFA3A8D6);
+  static const Color textOnLight = indigo;
 
   //Actions
-  static const Color primary = Color(0xFFF6C453); //Khelora gold
-  static const Color primaryDeep = Color(0xFFC9922B);
-  static const Color onPrimary = Color(0xFF3A2700);
-  static const Color secondary = Color(0xFF6E9BFF); //Khelora blue
-  static const Color secondaryDeep = Color(0xFF4A70D4);
-  static const Color danger = Color(0xFFFF6F78); //Khelora coral
-  static const Color dangerDeep = Color(0xFFD24D57);
-  static const Color success = Color(0xFF4CD7A0); //Khelora mint
-  static const Color gold = Color(0xFFFFD54F);
-  static const Color silver = Color(0xFFCFD8E3);
-  static const Color bronze = Color(0xFFE0A26E);
+  static const Color primary = gold;
+  static const Color primaryDeep = goldEdge;
+  static const Color onPrimary = indigo;
+  static const Color secondary = sandstone;
+  static const Color secondaryDeep = Color(0xFFD9B3A0);
+  static const Color onSecondary = indigo;
+  static const Color danger = Color(0xFFD62F33);
+  static const Color dangerDeep = Color(0xFF9E1F22);
+  static const Color success = Color(0xFF1F9D5C);
 
-  //Player colors, shared by every game that seats colored players
-  static const Color playerRed = Color(0xFFEF4A4A);
-  static const Color playerGreen = Color(0xFF2EBF5B);
-  static const Color playerYellow = Color(0xFFFFC61A);
-  static const Color playerBlue = Color(0xFF2F86F0);
+  //Medals
+  static const Color medalGold = gold;
+  static const Color medalSilver = Color(0xFFDDE2EA);
+  static const Color medalBronze = Color(0xFFE9A877);
+  static const Color silver = medalSilver;
+  static const Color bronze = medalBronze;
 
-  static const LinearGradient background = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [backgroundTop, backgroundBottom],
-  );
+  //Player colors: pawns, bases and board
+  static const Color playerRed = Color(0xFFD62F33);
+  static const Color playerGreen = Color(0xFF1F9D5C);
+  static const Color playerYellow = Color(0xFFF2AE1C);
+  static const Color playerBlue = Color(0xFF2F7BE5);
 
-  ///Lighter and darker variants for gradients and 3D edges
-  static Color lighten(Color c, [double amount = 0.15]) =>
-      Color.lerp(c, Colors.white, amount)!;
+  //Player panel fills, darker where needed for 4.5:1 text contrast.
+  //White text on all of them except yellow, which takes indigo text.
+  static const Color panelRed = Color(0xFFD62F33);
+  static const Color panelGreen = Color(0xFF157A46);
+  static const Color panelYellow = Color(0xFFF2AE1C);
+  static const Color panelBlue = Color(0xFF2163C4);
+
+  static Color lighten(Color c, [double amount = 0.15]) => Color.lerp(c, Colors.white, amount)!;
 
   static Color darken(Color c, [double amount = 0.2]) => Color.lerp(c, Colors.black, amount)!;
 }

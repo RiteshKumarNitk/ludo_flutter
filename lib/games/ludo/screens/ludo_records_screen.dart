@@ -69,7 +69,7 @@ class _StatsTab extends StatelessWidget {
     final ok = await showConfirmDialog(context,
         title: t.resetRecordsTitle,
         message: t.resetRecordsBody,
-        confirmLabel: t.resetRecords.toUpperCase(),
+        confirmLabel: t.resetRecords,
         icon: Icons.delete_outline_rounded,
         destructive: true);
     if (ok) records.reset();
@@ -161,7 +161,7 @@ class _StatsTab extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         GameButton(
-          label: t.resetRecords.toUpperCase(),
+          label: t.resetRecords,
           icon: Icons.delete_outline_rounded,
           variant: GameButtonVariant.ghost,
           onPressed: () => _confirmReset(context),

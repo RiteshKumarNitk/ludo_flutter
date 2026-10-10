@@ -235,7 +235,7 @@ class TurnStatus extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text.rich(
                   TextSpan(children: [
-                  TextSpan(text: title.toUpperCase(), style: AppTypography.label.copyWith(color: AppColors.textPrimary, fontSize: 13.5)),
+                  TextSpan(text: title, style: AppTypography.label.copyWith(color: AppColors.textPrimary, fontSize: 13.5)),
                   TextSpan(text: '  ·  $hint', style: AppTypography.caption.copyWith(color: AppColors.textSecondary, fontSize: 14)),
                   ]),
                   maxLines: 1,

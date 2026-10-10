@@ -336,12 +336,12 @@ class _FeaturedCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const TagPill('FEATURED', color: AppColors.primary, textColor: AppColors.onPrimary),
+                        const TagPill('Featured', color: AppColors.primary, textColor: AppColors.onPrimary),
                         const SizedBox(height: AppSpacing.sm),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
-                          child: Text(game.title.toUpperCase(),
+                          child: Text(game.title,
                               style: AppTypography.display.copyWith(fontSize: 44, letterSpacing: 4)),
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -371,7 +371,7 @@ class _FeaturedCard extends StatelessWidget {
                           child: Center(child: _SavedMatchChip(match: resumable!)),
                         ),
                         GameButton(
-                          label: s.newMatch.toUpperCase(),
+                          label: s.newMatch,
                           icon: Icons.add_rounded,
                           variant: GameButtonVariant.ghost,
                           onPressed: play,

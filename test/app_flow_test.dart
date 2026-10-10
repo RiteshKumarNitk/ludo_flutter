@@ -69,34 +69,34 @@ void main() {
     group(entry.key, () {
       testWidgets('home → setup → game, with leave confirmation on back', (tester) async {
         await launch(tester, entry.value);
-        expect(find.text('PLAY'), findsOneWidget);
-        expect(find.text('COMING SOON'), findsNWidgets(3));
+        expect(find.text('Play'), findsOneWidget);
+        expect(find.text('Coming soon'), findsNWidgets(3));
 
-        await tapText(tester, 'PLAY');
-        expect(find.text('START GAME'), findsOneWidget);
+        await tapText(tester, 'Play');
+        expect(find.text('Start match'), findsOneWidget);
         expect(find.textContaining('Extra roll'), findsNothing, reason: 'no rule switches');
-        await tapText(tester, 'PASS & PLAY');
-        expect(find.text('DIFFICULTY'), findsNothing, reason: 'no bots, no difficulty');
-        await tapText(tester, 'VS COMPUTER');
-        expect(find.text('DIFFICULTY'), findsOneWidget);
+        await tapText(tester, 'Pass & Play');
+        expect(find.text('Bot difficulty'), findsNothing, reason: 'no bots, no difficulty');
+        await tapText(tester, 'VS Computer');
+        expect(find.text('Bot difficulty'), findsOneWidget);
 
-        await tapText(tester, 'START GAME');
-        expect(find.text('LUDO'), findsOneWidget);
-        expect(find.textContaining('YOUR TURN', findRichText: true), findsOneWidget);
+        await tapText(tester, 'Start match');
+        expect(find.text('Ludo'), findsOneWidget);
+        expect(find.textContaining('Your turn', findRichText: true), findsOneWidget);
         expect(find.textContaining('Tap the dice', findRichText: true), findsWidgets);
 
         //Android back asks before leaving
         await tester.binding.handlePopRoute();
         await frames(tester, 600);
         expect(find.text('Leave game?'), findsOneWidget);
-        await tapText(tester, 'CONTINUE');
-        expect(find.textContaining('YOUR TURN', findRichText: true), findsOneWidget, reason: 'still in the game');
+        await tapText(tester, 'Continue');
+        expect(find.textContaining('Your turn', findRichText: true), findsOneWidget, reason: 'still in the game');
 
         await tester.binding.handlePopRoute();
         await frames(tester, 600);
-        await tapText(tester, 'LEAVE GAME');
+        await tapText(tester, 'Leave game');
         await frames(tester);
-        expect(find.text('CONTINUE'), findsOneWidget, reason: 'saved match offered on home');
+        expect(find.text('Continue'), findsOneWidget, reason: 'saved match offered on home');
         expect(find.text('vs Computer'), findsOneWidget);
         await tester.pumpWidget(const SizedBox());
         await frames(tester, 2000);
@@ -109,21 +109,21 @@ void main() {
 
         await tester.tap(find.byTooltip('Pause'));
         await frames(tester, 600);
-        expect(find.text('PAUSED'), findsOneWidget);
-        await tapText(tester, 'RESTART');
+        expect(find.text('Paused'), findsOneWidget);
+        await tapText(tester, 'Restart');
         expect(find.text('Restart match?'), findsOneWidget);
         await tester.tapAt(const Offset(5, 5)); //outside the dialog
         await frames(tester, 600);
         expect(find.text('Restart match?'), findsOneWidget, reason: 'destructive dialogs ignore outside taps');
-        await tapText(tester, 'CANCEL');
-        expect(find.text('PAUSED'), findsOneWidget, reason: 'back on the pause menu');
+        await tapText(tester, 'Cancel');
+        expect(find.text('Paused'), findsOneWidget, reason: 'back on the pause menu');
 
-        await tapText(tester, 'QUIT');
+        await tapText(tester, 'Quit');
         expect(find.text('Quit match?'), findsOneWidget);
-        await tapText(tester, 'QUIT');
+        await tapText(tester, 'Quit');
         await frames(tester);
-        expect(find.text('PLAY'), findsOneWidget, reason: 'quit returns home with no saved match');
-        expect(find.text('CONTINUE'), findsNothing);
+        expect(find.text('Play'), findsOneWidget, reason: 'quit returns home with no saved match');
+        expect(find.text('Continue'), findsNothing);
         await tester.pumpWidget(const SizedBox());
         await frames(tester, 2000);
       });
@@ -161,30 +161,30 @@ void main() {
 
         c.debugShow(duel(), finishedState(duel(), LudoColor.red));
         await openRoute(tester, LudoRoutes.result);
-        expect(find.text('YOU WIN!'), findsOneWidget);
-        expect(find.text('WINNER'), findsOneWidget);
-        for (final label in ['PLAY AGAIN', 'NEW GAME', 'HOME']) {
+        expect(find.text('You won!'), findsOneWidget);
+        expect(find.text('Winner'), findsOneWidget);
+        for (final label in ['Play again', 'New game', 'Home']) {
           await reveal(tester, label);
           expect(find.text(label), findsOneWidget);
         }
-        await tapText(tester, 'HOME');
-        expect(find.text('PLAY'), findsOneWidget);
+        await tapText(tester, 'Home');
+        expect(find.text('Play'), findsOneWidget);
 
         c.debugShow(duel(), finishedState(duel(), LudoColor.yellow));
         await openRoute(tester, LudoRoutes.result);
-        expect(find.text('YOU LOST'), findsOneWidget);
+        expect(find.text('You lost'), findsOneWidget);
         expect(find.text('Better luck next time!'), findsOneWidget);
         await tester.binding.handlePopRoute(); //Android back from the result goes home
         await frames(tester);
-        expect(find.text('PLAY'), findsOneWidget);
+        expect(find.text('Play'), findsOneWidget);
 
         final friends = duel(yellowIsBot: false);
         c.debugShow(friends, finishedState(friends, LudoColor.yellow));
         await openRoute(tester, LudoRoutes.result);
-        expect(find.text('GAME OVER'), findsOneWidget);
-        expect(find.text('YELLOW WINS!'), findsOneWidget);
-        await tapText(tester, 'PLAY AGAIN');
-        expect(find.text('LUDO'), findsOneWidget, reason: 'rematch opens the game');
+        expect(find.text('Game over'), findsOneWidget);
+        expect(find.text('Yellow wins!'), findsOneWidget);
+        await tapText(tester, 'Play again');
+        expect(find.text('Ludo'), findsOneWidget, reason: 'rematch opens the game');
         await tearDownMatch(tester);
       });
 
@@ -202,20 +202,20 @@ void main() {
         await frames(tester);
         expect(find.text('Board theme'), findsOneWidget);
         expect(find.textContaining('Extra roll'), findsNothing);
-        await tapText(tester, 'RESET SETTINGS');
+        await tapText(tester, 'Reset settings');
         expect(find.text('Reset settings?'), findsOneWidget);
-        await tapText(tester, 'CANCEL');
+        await tapText(tester, 'Cancel');
         await tester.binding.handlePopRoute();
         await frames(tester);
 
         await tapText(tester, 'About');
         expect(find.text('Innovatex Technology Pvt. Ltd.'), findsOneWidget);
         expect(find.textContaining('does not collect'), findsOneWidget);
-        await tapText(tester, 'OPEN-SOURCE LICENSES');
+        await tapText(tester, 'Open-source licenses');
         expect(find.byType(LicensePage), findsOneWidget);
         await tester.binding.handlePopRoute();
         await frames(tester);
-        await tapText(tester, 'CLOSE');
+        await tapText(tester, 'Close');
 
         await tapText(tester, 'How to play');
         await reveal(tester, '8 safe cells');

@@ -16,13 +16,13 @@ class LudoStrings {
 
   //Setup
   String get setupTitle => 'New match';
-  String get playersLabel => 'PLAYERS';
-  String get modeLabel => 'MODE';
-  String get difficultyLabel => 'DIFFICULTY';
-  String get seatsLabel => 'AT THE TABLE';
-  String get vsComputer => 'VS COMPUTER';
+  String get playersLabel => 'Players';
+  String get modeLabel => 'Mode';
+  String get difficultyLabel => 'Bot difficulty';
+  String get seatsLabel => 'At the table';
+  String get vsComputer => 'VS Computer';
   String get vsComputerHint => 'You against bots';
-  String get passAndPlay => 'PASS & PLAY';
+  String get passAndPlay => 'Pass & Play';
   String get passAndPlayHint => 'Friends on one phone';
   String get easy => 'Easy';
   String get medium => 'Medium';
@@ -38,27 +38,27 @@ class LudoStrings {
     }
   }
 
-  String get startGame => 'START GAME';
+  String get startGame => 'Start match';
   String get human => 'Human';
   String get bot => 'Bot';
   String get tapToRename => 'Tap a name to rename';
   String get tapSeatToggle => 'Tap Human / Bot to switch a seat';
   String get renameTitle => 'Player name';
-  String get save => 'SAVE';
+  String get save => 'Save';
   String get you => 'You';
   String playerN(int n) => 'Player $n';
   String botName(LudoColor c) => c.label;
   String get goesFirst => 'Goes first';
   String get replaceSavedTitle => 'Start a new match?';
   String get replaceSavedBody => 'Your unfinished match will be replaced.';
-  String get startNew => 'START NEW';
+  String get startNew => 'Start new';
 
   //Game
   String get pause => 'Pause';
   String get leaveTitle => 'Leave game?';
   String get leaveBody => 'Your match is saved. You can continue it from the home screen.';
-  String get continueGame => 'CONTINUE';
-  String get leaveGame => 'LEAVE GAME';
+  String get continueGame => 'Continue';
+  String get leaveGame => 'Leave game';
   String get yourTurn => 'Your turn';
   String turnOf(String name) => "$name's turn";
   String get tapDice => 'Tap the dice';
@@ -89,23 +89,23 @@ class LudoStrings {
   }
 
   //Result
-  String get youWin => 'YOU WIN!';
-  String get youLost => 'YOU LOST';
-  String get gameOver => 'GAME OVER';
-  String winsTitle(String name) => '${name.toUpperCase()} WINS!';
+  String get youWin => 'You won!';
+  String get youLost => 'You lost';
+  String get gameOver => 'Game over';
+  String winsTitle(String name) => '$name wins!';
   String get betterLuck => 'Better luck next time!';
   String get greatGame => 'What a game!';
   String finishedPlace(String place) => 'You finished $place';
-  String get winner => 'WINNER';
-  String get standings => 'STANDINGS';
+  String get winner => 'Winner';
+  String get standings => 'Standings';
   String get duration => 'Duration';
   String get turns => 'Turns';
   String get captures => 'Captures';
   String get sixes => 'Sixes';
   String get home => 'Home';
-  String get playAgain => 'PLAY AGAIN';
-  String get newGame => 'NEW GAME';
-  String get homeButton => 'HOME';
+  String get playAgain => 'Play again';
+  String get newGame => 'New game';
+  String get homeButton => 'Home';
 
   String ordinal(int n) {
     switch (n) {
@@ -126,7 +126,7 @@ class LudoStrings {
 
   //Settings
   String get boardTheme => 'Board theme';
-  String get sectionTitle => 'LUDO';
+  String get sectionTitle => 'Ludo';
 
   //Records
   String get records => 'Records';
@@ -134,7 +134,7 @@ class LudoStrings {
   String get achievements => 'Achievements';
   String get noMatchesTitle => 'No matches yet';
   String get noMatchesBody => 'Finish your first match and your records will show up here.';
-  String get playLudo => 'PLAY LUDO';
+  String get playLudo => 'Play Ludo';
   String get wins => 'Wins';
   String get losses => 'Losses';
   String get winRate => 'Win rate';
@@ -146,8 +146,8 @@ class LudoStrings {
   String get sixesRolled => 'Sixes';
   String get flawlessWins => 'Flawless wins';
   String get passAndPlayGames => 'Pass & play';
-  String get vsComputerStats => 'VS COMPUTER';
-  String get winsByDifficulty => 'WINS BY DIFFICULTY';
+  String get vsComputerStats => 'VS Computer';
+  String get winsByDifficulty => 'Wins by difficulty';
   String get resetRecords => 'Reset records';
   String get resetRecordsTitle => 'Reset records?';
   String get resetRecordsBody => 'All statistics and achievement progress will be cleared. This cannot be undone.';

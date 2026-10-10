@@ -14,12 +14,13 @@ class AppTheme {
 
   static ThemeData get dark {
     final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.secondary,
+      seedColor: AppColors.indigo,
       brightness: Brightness.dark,
     ).copyWith(
       primary: AppColors.primary,
       onPrimary: AppColors.onPrimary,
       secondary: AppColors.secondary,
+      onSecondary: AppColors.onSecondary,
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
       error: AppColors.danger,
@@ -29,7 +30,8 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.backgroundBottom,
+      scaffoldBackgroundColor: AppColors.background,
+      fontFamily: AppTypography.textFamily,
       canvasColor: AppColors.surface,
       splashFactory: InkSparkle.splashFactory,
       textTheme: const TextTheme(
@@ -45,12 +47,17 @@ class AppTheme {
       iconTheme: const IconThemeData(color: AppColors.textPrimary),
       dialogTheme: const DialogThemeData(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.xlAll),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
       ),
       snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.surfaceRaised,
-        contentTextStyle: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+        contentTextStyle: TextStyle(
+          fontFamily: AppTypography.textFamily,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
         shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
       ),
       switchTheme: SwitchThemeData(
